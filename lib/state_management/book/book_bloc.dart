@@ -12,8 +12,8 @@ part 'book_state.dart';
 
 class BookBloc extends Bloc<BookEvent, BookState> {
   final BookViewModel bookViewModel;
-  final BookDownloadsCubit _bookDownloadsCubit;
-  BookBloc(this.bookViewModel, this._bookDownloadsCubit)
+  final BookDownloadsCubit bookDownloadsCubit;
+  BookBloc(this.bookViewModel, this.bookDownloadsCubit)
     : super(BookInitial()) {
     on<LikeBook>((event, emit) async {
       try {
@@ -22,7 +22,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           isFavorite: true,
         );
 
-        await _bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks();
         emit(BookLikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -35,7 +35,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           id: event.bookStoreId,
           isFavorite: false,
         );
-        await _bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks();
         emit(BookDislikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -49,7 +49,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           currentRead: event.currentRead,
           lastRead: DateTime.now(),
         );
-        await _bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks();
         emit(BookLastReadUpdateSuccess());
       } catch (e) {
         emit(BookUpdateFailed());

@@ -141,97 +141,106 @@ class _HomePageState extends State<HomePage>
                         ),
                         itemBuilder: (context, index) {
                           BookStore bookStore = bookStores[index];
-                          return Card(
-                            elevation: 5.0,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10.0,
-                                vertical: 2.0,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () async {
-                                          await _bookDownloadsCubit
-                                              .bookViewModel
-                                              .deleteBook(bookStore.id!);
-                                          _bookDownloadsCubit.getBooks();
-                                        },
-                                        icon: Icon(Icons.close),
+                          return InkWell(
+                            onTap: () {
+                              widget._router.onShowBookViewerUi(
+                                context,
+                                bookStore,
+                              );
+                            },
+                            child: Card(
+                              elevation: 5.0,
+
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10.0,
+                                  vertical: 2.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () async {
+                                            await _bookDownloadsCubit
+                                                .bookViewModel
+                                                .deleteBook(bookStore.id!);
+                                            _bookDownloadsCubit.getBooks();
+                                          },
+                                          icon: Icon(Icons.close),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            await _bookDownloadsCubit
+                                                .bookViewModel
+                                                .dataSource
+                                                .updateFavoriteStatus(
+                                                  id: bookStore.id!,
+                                                  isFavorite:
+                                                      !bookStore.isFavorite,
+                                                );
+                                            _bookDownloadsCubit.getBooks();
+                                          },
+                                          icon: bookStore.isFavorite
+                                              ? Icon(
+                                                  Icons.favorite,
+                                                  color: Colors.red,
+                                                )
+                                              : Icon(Icons.favorite_outline),
+                                        ),
+                                      ],
+                                    ),
+                                    bookStore.imageUrl != null
+                                        ? Flexible(
+                                            flex: 2,
+                                            child: SizedBox(
+                                              width: 350,
+                                              child: bookStore.imageUrl != null
+                                                  ? Image.network(
+                                                      bookStore.imageUrl!,
+                                                    )
+                                                  : SizedBox(),
+                                            ),
+                                          )
+                                        : SizedBox(),
+                                    Center(
+                                      child: Text(
+                                        bookStore.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(fontSize: 14),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          await _bookDownloadsCubit
-                                              .bookViewModel
-                                              .dataSource
-                                              .updateFavoriteStatus(
-                                                id: bookStore.id!,
-                                                isFavorite:
-                                                    !bookStore.isFavorite,
-                                              );
-                                          _bookDownloadsCubit.getBooks();
-                                        },
-                                        icon: bookStore.isFavorite
-                                            ? Icon(
-                                                Icons.favorite,
-                                                color: Colors.red,
-                                              )
-                                            : Icon(Icons.favorite_outline),
+                                    ),
+                                    Center(
+                                      child: Text(
+                                        "Author: ${bookStore.author}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(fontSize: 12),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  bookStore.imageUrl != null
-                                      ? Flexible(
-                                          flex: 2,
-                                          child: SizedBox(
-                                            width: 350,
-                                            child: bookStore.imageUrl != null
-                                                ? Image.network(
-                                                    bookStore.imageUrl!,
-                                                  )
-                                                : SizedBox(),
-                                          ),
-                                        )
-                                      : SizedBox(),
-                                  Center(
-                                    child: Text(
-                                      bookStore.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(fontSize: 14),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      "Author: ${bookStore.author}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(fontSize: 12),
-                                      overflow: TextOverflow.ellipsis,
+                                    Center(
+                                      child: Text(
+                                        "On page: ${bookStore.currentRead}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(fontSize: 10),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      "On page: ${bookStore.currentRead}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(fontSize: 10),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           );

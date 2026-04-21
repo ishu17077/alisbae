@@ -76,8 +76,8 @@ class CompositionRoot {
   }
 
   static Widget showBookViewerUi(BookStore bookStore) {
-    return MultiBlocProvider(
-      providers: [],
+    return BlocProvider(
+      create: (context) => BookBloc(_bookViewModel, _bookDownloadsCubit),
       child: BookViewer(bookStore: bookStore),
     );
   }
