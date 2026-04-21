@@ -1,6 +1,4 @@
-import 'package:fluttertoast/fluttertoast.dart';
-
-class SearchResult {
+class BookSearchResult {
   String postImage;
   int id;
   String postTitle;
@@ -8,7 +6,7 @@ class SearchResult {
   String bookTitle;
   String author;
 
-  SearchResult({
+  BookSearchResult({
     required this.postImage,
     required this.id,
     required this.postTitle,
@@ -17,8 +15,8 @@ class SearchResult {
     required this.author,
   });
 
-  factory SearchResult.fromJson(Map<String, dynamic> map) {
-    return SearchResult(
+  factory BookSearchResult.fromJSON(Map<String, dynamic> map) {
+    return BookSearchResult(
       postImage: map["post_image"],
       id: map["ID"],
       postTitle: map["post_title"],

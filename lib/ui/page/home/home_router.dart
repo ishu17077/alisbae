@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 abstract class IHomeRouter {
   Future<void> onShowBookDetailsUi(
     BuildContext context,
-    SearchResult searchResult,
+    BookSearchResult searchResult,
   );
 }
 
 final class HomeRouter implements IHomeRouter {
-  final Widget Function(SearchResult searchResult) showBookDetailsUi;
+  final Widget Function(BookSearchResult searchResult) showBookDetailsUi;
 
   HomeRouter({required this.showBookDetailsUi});
 
   @override
   Future<void> onShowBookDetailsUi(
     BuildContext context,
-    SearchResult searchResult,
+    BookSearchResult searchResult,
   ) {
     return Navigator.push(
       context,

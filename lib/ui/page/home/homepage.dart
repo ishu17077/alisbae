@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Search books :)")),
-      body: BlocBuilder<SearchCubit, List<SearchResult>>(
+      body: BlocBuilder<SearchCubit, List<BookSearchResult>>(
         builder: (context, searchResults) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

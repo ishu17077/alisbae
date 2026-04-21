@@ -29,9 +29,9 @@ class CompositionRoot {
     );
   }
 
-  static Widget showBookDetailsUi(SearchResult searchResult) {
+  static Widget showBookDetailsUi(BookSearchResult searchResult) {
     _dataCrawler.downloadBook(
-      bookName: "Dex_Dutch_Edition_-_Hillers_Miranda.pdf",
+      fileName: "Dex_Dutch_Edition_-_Hillers_Miranda.pdf",
     );
     return BlocProvider(
       create: (context) => BookDetailsCubit(_dataCrawler),

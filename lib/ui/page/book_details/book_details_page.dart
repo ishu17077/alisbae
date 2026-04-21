@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BookDetailsPage extends StatefulWidget {
-  final SearchResult result;
+  final BookSearchResult result;
   const BookDetailsPage({required this.result});
 
   @override

@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:brotli/brotli.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 
 class DataCrawler {
   final RegExp _bookDetailsMatch = RegExp(
@@ -22,7 +21,9 @@ class DataCrawler {
   final RegExp _downloadLinkMatch = RegExp(r'content="[^"]*url=([^"]+)"');
   final Dio dio = Dio();
 
-  DataCrawler._createInstance(Directory dir);
+  Directory _dir;
+
+  DataCrawler._createInstance(this._dir);
 
   static DataCrawler? _instance;
 
@@ -88,9 +89,9 @@ class DataCrawler {
     return {};
   }
 
-  Future<Map<String, dynamic>> downloadBook({
-    required String bookName,
-    void Function(String progress)? callback,
+  Future<String?> downloadBook({
+    required String fileName,
+    void Function(int count, int total)? callback,
   }) async {
     final apiUrl = "https://oceanofpdf.com/Fetching_Resource.php";
     late final String? downloadLink;
@@ -99,7 +100,7 @@ class DataCrawler {
         initialUrlRequest: URLRequest(
           url: WebUri(apiUrl),
           method: 'POST',
-          body: Uint8List.fromList(utf8.encode("id=srv3&filename=$bookName")),
+          body: Uint8List.fromList(utf8.encode("id=srv3&filename=$fileName")),
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'PostmanRuntime/7.53.0',
@@ -122,13 +123,35 @@ class DataCrawler {
       );
       await headlessWebView.run();
 
+      var filePath = join(_dir.path, fileName);
       if (downloadLink == null || downloadLink!.isEmpty) {
         Fluttertoast.showToast(
-          msg: "Please contact your personal unpaid developer. Wink. $e",
+          msg: "Please contact your personal unpaid developer. Wink.",
         );
-        return {}
+        return null;
       }
-    } catch (e) {}
-    return {};
+
+      await dio.download(
+        downloadLink!,
+        filePath,
+        onReceiveProgress: callback,
+        deleteOnError: true,
+        fileAccessMode: FileAccessMode.write,
+      );
+
+      if (downloadLink == null || downloadLink!.isEmpty) {
+        Fluttertoast.showToast(
+          msg: "Please contact your personal unpaid developer. Wink.",
+        );
+        return null;
+      }
+
+      return filePath;
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Please contact your personal unpaid developer. Wink. $e",
+      );
+    }
+    return null;
   }
 }

@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
 class BookDetails {
   String bookName;
   String bookAuthor;
@@ -19,7 +16,7 @@ class BookDetails {
     required this.fileName,
   });
 
-  factory BookDetails.fromJson(Map<String, dynamic> map) {
+  factory BookDetails.fromJSON(Map<String, dynamic> map) {
     return BookDetails(
       bookName: map["@graph"][0]["headline"]
           .toString()
