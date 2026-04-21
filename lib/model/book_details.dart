@@ -2,7 +2,7 @@ class BookDetails {
   String bookName;
   String bookAuthor;
   String description;
-  String datePublished;
+  DateTime datePublished;
   String imageLink;
   String bookUrl;
   String language;
@@ -26,7 +26,9 @@ class BookDetails {
           .replaceFirst("[EPUB]", ""),
       bookAuthor: map["@graph"][0]["author"]["name"] as String,
       description: map["@graph"][1]['description'] as String,
-      datePublished: map["@graph"][1]['datePublished'] as String,
+      datePublished:
+          DateTime.tryParse(map["@graph"][1]['datePublished'] as String) ??
+          DateTime.now(),
       imageLink: map["@graph"][0]['thumbnailUrl'] as String,
       language: map["@graph"][0]['inLanguage'] as String,
       bookUrl: map["@graph"][1]['@id'],

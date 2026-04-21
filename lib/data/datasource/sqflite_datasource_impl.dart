@@ -28,7 +28,10 @@ class SqfliteDatasourceImpl implements IDataSource {
 
   @override
   Future<List<BookStore>> getDownloadedBooks() async {
-    var books = await _db.query(BooksTable.tableName);
+    var books = await _db.query(
+      BooksTable.tableName,
+      orderBy: "${BooksTable.lastRead} DESC, ${BooksTable.isFavorite} DESC",
+    );
     return books.map((bookMap) {
       return BookStore.fromJSON(bookMap);
     }).toList();
@@ -39,9 +42,12 @@ class SqfliteDatasourceImpl implements IDataSource {
     required int id,
     required bool isFavorite,
   }) async {
-    await _db.update(BooksTable.tableName, {
-      BooksTable.isFavorite: isFavorite ? 1 : 0,
-    });
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.isFavorite: isFavorite ? 1 : 0},
+      where: "id = ?",
+      whereArgs: [id],
+    );
   }
 
   @override

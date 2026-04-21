@@ -54,8 +54,8 @@ class BookStore {
       author: map[BooksTable.author] as String,
       bookPath: map[BooksTable.bookPath] as String,
       currentRead: map[BooksTable.currentRead] as int,
-      addedOn: DateTime.fromMicrosecondsSinceEpoch(
-        (map[BooksTable.addedOn] ?? 0),
+      addedOn: DateTime.fromMillisecondsSinceEpoch(
+        (map[BooksTable.addedOn]) ?? DateTime.now(),
       ),
       isFavorite: map[BooksTable.isFavorite] == null
           ? false
@@ -64,7 +64,7 @@ class BookStore {
           : false,
       imageUrl: map[BooksTable.imageUrl],
       lastRead: map[BooksTable.lastRead] != null
-          ? DateTime.fromMicrosecondsSinceEpoch(map[BooksTable.lastRead] as int)
+          ? DateTime.fromMillisecondsSinceEpoch(map[BooksTable.lastRead])
           : null,
       serverId: map[BooksTable.serverId] != null
           ? map[BooksTable.serverId] as int

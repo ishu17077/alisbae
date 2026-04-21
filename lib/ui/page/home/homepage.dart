@@ -14,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
@@ -30,105 +31,108 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(title: Text("Search books :)")),
       body: BlocBuilder<BookSearchCubit, List<BookSearchResult>>(
         builder: (context, searchResults) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: searchController,
-                    autofocus: false,
-                    decoration: InputDecoration(
-                      label: Text("What thy must demand?"),
-                      hint: Text("Procced!"),
+            child: Column(
+              children: [
+                TextField(
+                  controller: searchController,
+                  autofocus: false,
+                  decoration: InputDecoration(
+                    label: Text("What thy must demand?"),
+                    hint: Text("Procced!"),
 
-                      //   labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      //   enabledBorder: OutlineInputBorder(
-                      //     borderRadius: BorderRadius.circular(20),
-                      //     borderSide: BorderSide(color: Colors.white, width: 2.5),
-                      //   ),
+                    //   labelStyle: Theme.of(context).textTheme.bodyMedium,
+                    //   enabledBorder: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(20),
+                    //     borderSide: BorderSide(color: Colors.white, width: 2.5),
+                    //   ),
 
-                      //   focusedBorder: OutlineInputBorder(
-                      //     borderRadius: BorderRadius.circular(20),
-                      //     borderSide: BorderSide(width: 2.5),
-                      //   ),
-                      //   border: OutlineInputBorder(
-                      //     borderRadius: BorderRadius.circular(20),
-                      //     gapPadding: 5,
-                      //     borderSide: BorderSide(
-                      //       width: 2.5,
-                      //       style: BorderStyle.solid,
-                      //     ),
-                      //   ),
-                    ),
-                    onChanged: (val) async {
-                      val = val.trim();
-                      if (val == "") {
-                        setState(() {});
-                        return;
-                      }
-
-                      setState(() {
-                        isLoading = true;
-                      });
-                      _searchCubit.results(val).then((_) {
-                        setState(() {
-                          isLoading = false;
-                        });
-                      });
-                    },
+                    //   focusedBorder: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(20),
+                    //     borderSide: BorderSide(width: 2.5),
+                    //   ),
+                    //   border: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(20),
+                    //     gapPadding: 5,
+                    //     borderSide: BorderSide(
+                    //       width: 2.5,
+                    //       style: BorderStyle.solid,
+                    //     ),
+                    //   ),
                   ),
-                  SizedBox(height: 20),
-                  searchController.text.trim() == ""
-                      ? Container(
-                          // Here previous reads
-                        )
-                      : isLoading
-                      ? Center(child: CircularProgressIndicator())
-                      : searchResults.isNotEmpty
-                      ? ListView.builder(
-                          itemBuilder: (context, index) {
-                            var searchResult = searchResults[index];
-                            return ListTile(
-                              onTap: () => widget._router.onShowBookDetailsUi(
+                  onChanged: (val) async {
+                    val = val.trim();
+                    if (val == "") {
+                      setState(() {});
+                      return;
+                    }
+
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _searchCubit.results(val).then((_) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    });
+                  },
+                ),
+                SizedBox(height: 20),
+                searchController.text.trim() == ""
+                    ? Container(
+                        // Here previous reads
+                      )
+                    : isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : searchResults.isNotEmpty
+                    ? ListView.builder(
+                        itemBuilder: (context, index) {
+                          var searchResult = searchResults[index];
+                          return ListTile(
+                            onTap: () async {
+                              widget._router.onShowBookDetailsUi(
                                 context,
                                 searchResult,
+                              );
+                            },
+                            leading: Image.network(searchResult.postImage),
+                            title: Text(
+                              searchResult.bookTitle,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            subtitle: Text(
+                              searchResult.author,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            trailing: SizedBox(
+                              width: 30,
+                              child: Text(
+                                searchResult.postTitle,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              leading: Image.network(searchResult.postImage),
-                              title: Text(
-                                searchResult.bookTitle,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              subtitle: Text(
-                                searchResult.author,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              trailing: SizedBox(
-                                width: 30,
-                                child: Text(
-                                  searchResult.postTitle,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            );
-                          },
-                          shrinkWrap: true,
-
-                          itemCount: searchResults.length,
-                        )
-                      : Text("Do search, please ;)"),
-                  BlocBuilder<BookDownloadsCubit, List<BookStore>>(
-                    builder: (context, bookStores) {
-                      if (bookStores.isEmpty) {
-                        return SizedBox();
-                      }
-                      return GridView.builder(
+                            ),
+                          );
+                        },
                         shrinkWrap: true,
+
+                        itemCount: searchResults.length,
+                      )
+                    : Text("Do search, please ;)"),
+                BlocBuilder<BookDownloadsCubit, List<BookStore>>(
+                  builder: (context, bookStores) {
+                    if (bookStores.isEmpty) {
+                      return SizedBox();
+                    }
+                    return Expanded(
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
                         scrollDirection: Axis.vertical,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -145,8 +149,45 @@ class _HomePageState extends State<HomePage> {
                                 vertical: 2.0,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () async {
+                                          await _bookDownloadsCubit
+                                              .bookViewModel
+                                              .deleteBook(bookStore.id!);
+                                          _bookDownloadsCubit.getBooks();
+                                        },
+                                        icon: Icon(Icons.close),
+                                      ),
+                                      IconButton(
+                                        onPressed: () async {
+                                          await _bookDownloadsCubit
+                                              .bookViewModel
+                                              .dataSource
+                                              .updateFavoriteStatus(
+                                                id: bookStore.id!,
+                                                isFavorite:
+                                                    !bookStore.isFavorite,
+                                              );
+                                          _bookDownloadsCubit.getBooks();
+                                        },
+                                        icon: bookStore.isFavorite
+                                            ? Icon(
+                                                Icons.favorite,
+                                                color: Colors.red,
+                                              )
+                                            : Icon(Icons.favorite_outline),
+                                      ),
+                                    ],
+                                  ),
                                   bookStore.imageUrl != null
                                       ? Flexible(
                                           flex: 2,
@@ -196,15 +237,19 @@ class _HomePageState extends State<HomePage> {
                           );
                         },
                         itemCount: bookStores.length,
-                      );
-                    },
-                  ),
-                ],
-              ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           );
         },
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

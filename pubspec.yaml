@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   bloc: ^9.2.0
   shared_preferences: ^2.5.5
-  syncfusion_flutter_pdfviewer: ^33.1.49
+  syncfusion_flutter_pdfviewer: ^33.2.3
   permission_handler: ^12.0.1
   dio: ^5.9.2
   fluttertoast: ^9.0.0

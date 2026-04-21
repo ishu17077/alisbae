@@ -115,7 +115,7 @@ class DataCrawler {
           downloadLink = downloadStartRequest.url.toString();
         },
         onLoadStop: (controller, url) async {
-          await Future.delayed(Duration(seconds: 10));
+          // await Future.delayed(Duration(seconds: 10));
 
           // String? renderedHtml = await controller.getHtml();
           // developer.log(renderedHtml ?? '');

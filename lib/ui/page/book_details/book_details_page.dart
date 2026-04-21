@@ -125,7 +125,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                     ),
                     _InfoText(
                       label: 'Published',
-                      value: bookDetailsState.bookDetails.datePublished,
+                      value: bookDetailsState.bookDetails.datePublished
+                          .toIso8601String(),
                     ),
                     _InfoText(
                       label: 'Language',
@@ -165,17 +166,18 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                   return FloatingActionButton(
                     onPressed: () {},
                     child: CircularProgressIndicator(
-                      value: state.count / state.total,
+                      value: state.count == 0
+                          ? null
+                          : state.count / state.total,
                     ),
                   );
                 }
 
                 if (state is DownloadSuccess) {
-                  Future.delayed(Duration(seconds: 5)).then((value) {
-                    _downloadBooksBloc.add(
-                      DownloadBookEvent.initial(widget.bookSearchResult),
-                    );
-                  });
+                  _downloadBooksBloc.add(
+                    DownloadBookEvent.initial(widget.bookSearchResult),
+                  );
+
                   return FloatingActionButton(
                     onPressed: () {},
                     child: Icon(Icons.download_done),
@@ -184,8 +186,25 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
 
                 if (state is AlreadyDownloaded) {
                   return FloatingActionButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _downloadBooksBloc.add(
+                        DownloadBookDelete(state.bookStore.id!),
+                      );
+                    },
                     child: Icon(Icons.remove_shopping_cart),
+                  );
+                }
+                if (state is DeleteSuccess) {
+                  return FloatingActionButton(
+                    onPressed: () {
+                      _downloadBooksBloc.add(
+                        DownloadBookEvent.downloadBook(
+                          bookDetailsState.bookDetails,
+                          widget.bookSearchResult,
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.download),
                   );
                 }
                 return FloatingActionButton(

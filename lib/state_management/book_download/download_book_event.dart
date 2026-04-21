@@ -7,7 +7,7 @@ sealed class DownloadBookEvent extends Equatable {
   factory DownloadBookEvent.downloadBook(
     BookDetails bookDetails,
     BookSearchResult bookSearchResult,
-  ) => DownloadStart(bookDetails, bookSearchResult);
+  ) => DownloadBookStart(bookDetails, bookSearchResult);
 }
 
 class DownloadBookInitial extends DownloadBookEvent {
@@ -19,11 +19,21 @@ class DownloadBookInitial extends DownloadBookEvent {
   List<Object?> get props => [bookSearchResult];
 }
 
-class DownloadStart extends DownloadBookEvent {
+class DownloadBookDelete extends DownloadBookEvent {
+  final int id;
+
+  const DownloadBookDelete(this.id);
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id];
+}
+
+class DownloadBookStart extends DownloadBookEvent {
   final BookDetails bookDetails;
   final BookSearchResult bookSearchResult;
 
-  const DownloadStart(this.bookDetails, this.bookSearchResult);
+  const DownloadBookStart(this.bookDetails, this.bookSearchResult);
   @override
   List<Object?> get props => [bookDetails.bookName, bookDetails.bookAuthor];
 }

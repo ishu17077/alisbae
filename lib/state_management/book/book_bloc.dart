@@ -1,4 +1,5 @@
 import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/viewmodel/book/book_view_mode.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,7 +12,9 @@ part 'book_state.dart';
 
 class BookBloc extends Bloc<BookEvent, BookState> {
   final BookViewModel bookViewModel;
-  BookBloc(this.bookViewModel) : super(BookInitial()) {
+  final BookDownloadsCubit _bookDownloadsCubit;
+  BookBloc(this.bookViewModel, this._bookDownloadsCubit)
+    : super(BookInitial()) {
     on<LikeBook>((event, emit) async {
       try {
         await bookViewModel.dataSource.updateFavoriteStatus(
@@ -19,7 +22,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           isFavorite: true,
         );
 
-        await bookViewModel.listAllBooksOffline();
+        await _bookDownloadsCubit.getBooks();
         emit(BookLikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -32,7 +35,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           id: event.bookStoreId,
           isFavorite: false,
         );
-        await bookViewModel.listAllBooksOffline();
+        await _bookDownloadsCubit.getBooks();
         emit(BookDislikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -46,7 +49,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           currentRead: event.currentRead,
           lastRead: DateTime.now(),
         );
-        await bookViewModel.listAllBooksOffline();
+        await _bookDownloadsCubit.getBooks();
         emit(BookLastReadUpdateSuccess());
       } catch (e) {
         emit(BookUpdateFailed());

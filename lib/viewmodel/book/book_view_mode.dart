@@ -75,4 +75,13 @@ class BookViewModel {
     books = await dataSource.getDownloadedBooks();
     return books;
   }
+
+  Future<void> deleteBook(int id) async {
+    final book = await dataSource.searchBookById(id);
+    if (book == null) {
+      return;
+    }
+    await dataSource.deleteBook(book.id!);
+    await _dataCrawler.deleteDownload(book.bookPath);
+  }
 }

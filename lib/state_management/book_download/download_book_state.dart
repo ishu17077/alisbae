@@ -23,6 +23,10 @@ class DownloadInitial extends DownloadBookState {
   List<Object?> get props => [];
 }
 
+class DeleteSuccess extends DownloadBookState {
+  const DeleteSuccess();
+}
+
 final class AlreadyDownloaded extends DownloadBookState {
   final BookStore bookStore;
 
