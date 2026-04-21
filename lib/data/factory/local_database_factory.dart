@@ -23,7 +23,7 @@ class LocalDatabaseFactory {
     String databasePath = await getDatabasesPath();
     String dbPath = join(databasePath, "book_details.db");
 
-    _database = await openDatabase(dbPath, onCreate: _populateDb);
+    _database = await openDatabase(dbPath, onCreate: _populateDb, version: 1);
     return _database!;
   }
 

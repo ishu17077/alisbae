@@ -3,7 +3,6 @@ import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/viewmodel/book/book_view_mode.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/physics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'download_book_event.dart';
@@ -21,6 +20,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
     });
 
     on<DownloadStart>((event, emit) async {
+      emit(DownloadBookState.downloading(0, 100));
       final result = await _bookViewModel.downloadBook(
         bookDetails: event.bookDetails,
         bookSearchResult: event.bookSearchResult,

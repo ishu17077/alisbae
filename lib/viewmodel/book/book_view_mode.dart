@@ -27,13 +27,10 @@ class BookViewModel {
       }
 
       final filePath = await _dataCrawler.downloadBook(
-        fileName: bookDetails.bookName,
+        fileName: bookDetails.fileName!,
         callback: callback,
       );
       if (filePath == null || filePath.isEmpty) {
-        Fluttertoast.showToast(
-          msg: "Please contact your personal unpaid developer. Wink.",
-        );
         return null;
       }
       final book = BookStore(

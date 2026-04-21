@@ -7,8 +7,8 @@ class BookDownloadsCubit extends Cubit<List<BookStore>> {
 
   BookDownloadsCubit(this.bookViewModel) : super([]);
 
-  Future<List<BookStore>> getBooks() async {
+  Future<void> getBooks() async {
     final books = await bookViewModel.listAllBooksOffline();
-    return books;
+    emit(books);
   }
 }

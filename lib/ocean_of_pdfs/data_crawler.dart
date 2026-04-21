@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
@@ -95,6 +96,7 @@ class DataCrawler {
   }) async {
     final apiUrl = "https://oceanofpdf.com/Fetching_Resource.php";
     late final String? downloadLink;
+    Completer<void> pageLoadCompleter = Completer<void>();
     try {
       var headlessWebView = HeadlessInAppWebView(
         initialUrlRequest: URLRequest(
@@ -106,23 +108,28 @@ class DataCrawler {
             'User-Agent': 'PostmanRuntime/7.53.0',
           },
         ),
-        onLoadStop: (controller, url) async {
-          await Future.delayed(Duration(seconds: 1));
-
-          String? renderedHtml = await controller.getHtml();
-          developer.log(renderedHtml ?? '');
-          if (renderedHtml != null) {
-            final match = _downloadLinkMatch.firstMatch(renderedHtml);
-            if (match != null) {
-              downloadLink = match.group(1)!.replaceAll('&amp;', '&');
-
-              debugPrint("Found Link: $downloadLink");
-            }
+        onDownloadStartRequest: (controller, downloadStartRequest) async {
+          if (!pageLoadCompleter.isCompleted) {
+            pageLoadCompleter.complete();
           }
+          downloadLink = downloadStartRequest.url.toString();
+        },
+        onLoadStop: (controller, url) async {
+          await Future.delayed(Duration(seconds: 10));
+
+          // String? renderedHtml = await controller.getHtml();
+          // developer.log(renderedHtml ?? '');
+          // if (renderedHtml != null) {
+          //   final match = _downloadLinkMatch.firstMatch(renderedHtml);
+          //   if (match != null) {
+          //     downloadLink = match.group(1)!.replaceAll('&amp;', '&');
+          //     debugPrint("Found Link: $downloadLink");
+          //   }
+          // }
         },
       );
       await headlessWebView.run();
-
+      await pageLoadCompleter.future;
       var filePath = join(_dir.path, fileName);
       if (downloadLink == null || downloadLink!.isEmpty) {
         Fluttertoast.showToast(
@@ -153,5 +160,13 @@ class DataCrawler {
       );
     }
     return null;
+  }
+
+  Future<void> deleteDownload(String path) async {
+    File file = File(path);
+    if (await file.exists()) {
+      await file.delete();
+      debugPrint("File deleted successfully");
+    }
   }
 }

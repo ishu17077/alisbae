@@ -8,7 +8,7 @@ part './book_details_state.dart';
 
 class BookDetailsCubit extends Cubit<BookDetailsState> {
   final BookViewModel _bookViewModel;
-  BookDetailsCubit(this._bookViewModel) : super(BookInitial());
+  BookDetailsCubit(this._bookViewModel) : super(BookDetailsInitial());
 
   Future<void> bookInfo({required String bookUrl}) async {
     try {

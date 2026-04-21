@@ -57,16 +57,20 @@ class BookStore {
       addedOn: DateTime.fromMicrosecondsSinceEpoch(
         (map[BooksTable.addedOn] ?? 0),
       ),
-      isFavorite: map[BooksTable.isFavorite] ?? 0 == 1 ? true : false,
+      isFavorite: map[BooksTable.isFavorite] == null
+          ? false
+          : map[BooksTable.isFavorite] == 1
+          ? true
+          : false,
       imageUrl: map[BooksTable.imageUrl],
       lastRead: map[BooksTable.lastRead] != null
           ? DateTime.fromMicrosecondsSinceEpoch(map[BooksTable.lastRead] as int)
           : null,
       serverId: map[BooksTable.serverId] != null
-          ? map['serverId'] as int
+          ? map[BooksTable.serverId] as int
           : null,
       serverUrl: map[BooksTable.serverUrl] != null
-          ? map['serverUrl'] as String
+          ? map[BooksTable.serverUrl] as String
           : null,
     );
     bookStore._id = map["id"] as int;

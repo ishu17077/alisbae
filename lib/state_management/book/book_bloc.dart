@@ -3,6 +3,9 @@ import 'package:alisbae/viewmodel/book/book_view_mode.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import 'package:alisbae/model/book_details.dart';
+import 'package:alisbae/model/search_result.dart';
+
 part 'book_event.dart';
 part 'book_state.dart';
 

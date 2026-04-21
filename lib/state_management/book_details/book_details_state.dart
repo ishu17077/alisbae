@@ -6,7 +6,7 @@ sealed class BookDetailsState extends Equatable {
   List<Object?> get props => [];
 }
 
-final class BookInitial extends BookDetailsState {}
+final class BookDetailsInitial extends BookDetailsState {}
 
 final class BookFound extends BookDetailsState {
   final BookStore? bookStore;

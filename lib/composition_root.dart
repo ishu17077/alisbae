@@ -1,10 +1,11 @@
 import 'dart:io';
-
 import 'package:alisbae/data/datasource/datasource_contract.dart';
 import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/data/factory/local_database_factory.dart';
 import 'package:alisbae/model/search_result.dart';
+import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
+import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/ui/page/book_details/book_details_page.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
@@ -24,6 +25,8 @@ class CompositionRoot {
   static late final Directory _dir;
   static late final BookSearchCubit _bookSearchCubit;
   static late final BookDownloadsCubit _bookDownloadsCubit;
+  static late final DownloadBooksBloc _downloadBooksBloc;
+  static late final BookBloc _bookBloc;
   static late final BookDetailsCubit _bookDetailsCubit;
   static Future<void> configure() async {
     _dir = await getApplicationDocumentsDirectory();
@@ -36,6 +39,8 @@ class CompositionRoot {
     _homeRouter = HomeRouter(showBookDetailsUi: showBookDetailsUi);
     _bookSearchCubit = BookSearchCubit(_bookViewModel);
     _bookDetailsCubit = BookDetailsCubit(_bookViewModel);
+    _downloadBooksBloc = DownloadBooksBloc(_bookViewModel);
+    _bookBloc = BookBloc(_bookViewModel);
     _bookDownloadsCubit = BookDownloadsCubit(_bookViewModel);
   }
 
@@ -43,7 +48,10 @@ class CompositionRoot {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => _bookSearchCubit),
-        BlocProvider(create: (context) => _bookSearchCubit),
+        BlocProvider(create: (context) => _bookDownloadsCubit),
+        BlocProvider(create: (context) => _bookDetailsCubit),
+        BlocProvider(create: (context) => _downloadBooksBloc),
+        BlocProvider(create: (context) => _bookBloc),
       ],
       child: HomePage(router: _homeRouter),
     );
@@ -52,8 +60,9 @@ class CompositionRoot {
   static Widget showBookDetailsUi(BookSearchResult searchResult) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => _bookDetailsCubit),
-        BlocProvider(create: (context) => _bookDownloadsCubit),
+        BlocProvider.value(value: _bookDetailsCubit),
+        BlocProvider.value(value: _downloadBooksBloc),
+        BlocProvider.value(value: _bookBloc),
       ],
       child: BookDetailsPage(bookSearchResult: searchResult),
     );
