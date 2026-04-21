@@ -4,6 +4,7 @@ class BookDetails {
   String description;
   String datePublished;
   String imageLink;
+  String bookUrl;
   String language;
   String? fileName;
   BookDetails({
@@ -12,6 +13,7 @@ class BookDetails {
     required this.description,
     required this.datePublished,
     required this.imageLink,
+    required this.bookUrl,
     required this.language,
     required this.fileName,
   });
@@ -27,6 +29,7 @@ class BookDetails {
       datePublished: map["@graph"][1]['datePublished'] as String,
       imageLink: map["@graph"][0]['thumbnailUrl'] as String,
       language: map["@graph"][0]['inLanguage'] as String,
+      bookUrl: map["@graph"][1]['@id'],
       fileName: map["fileName"] as String?,
     );
   }

@@ -57,4 +57,34 @@ class SqfliteDatasourceImpl implements IDataSource {
       BooksTable.currentRead: currentRead,
     });
   }
+
+  @override
+  Future<BookStore?> searchBookByServerId(int serverId) async {
+    final bookMap = await _db.query(
+      BooksTable.tableName,
+      where: "${BooksTable.serverId} = ?",
+      whereArgs: [serverId],
+      limit: 1,
+    );
+    if (bookMap.isEmpty) {
+      return null;
+    }
+
+    return BookStore.fromJSON(bookMap.first);
+  }
+
+  @override
+  Future<BookStore?> searchBookById(int id) async {
+    final bookMap = await _db.query(
+      BooksTable.tableName,
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (bookMap.isEmpty) {
+      return null;
+    }
+
+    return BookStore.fromJSON(bookMap.first);
+  }
 }

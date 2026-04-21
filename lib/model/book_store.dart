@@ -12,12 +12,14 @@ class BookStore {
   bool isFavorite;
   DateTime? lastRead;
   int? serverId;
+  String? imageUrl;
   String? serverUrl;
 
   BookStore({
     required this.name,
     required this.author,
     required this.bookPath,
+    required this.imageUrl,
     this.currentRead = 1,
     this.isFavorite = false,
     this.lastRead,
@@ -25,6 +27,9 @@ class BookStore {
     this.serverUrl,
     DateTime? addedOn,
   }) {
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      imageUrl = null;
+    }
     this.addedOn = addedOn ?? DateTime.now();
   }
 
@@ -32,6 +37,7 @@ class BookStore {
     return <String, dynamic>{
       BooksTable.bookName: name,
       BooksTable.author: author,
+      BooksTable.imageUrl: imageUrl,
       BooksTable.bookPath: bookPath,
       BooksTable.currentRead: currentRead,
       BooksTable.addedOn: addedOn.millisecondsSinceEpoch,
@@ -52,6 +58,7 @@ class BookStore {
         (map[BooksTable.addedOn] ?? 0),
       ),
       isFavorite: map[BooksTable.isFavorite] ?? 0 == 1 ? true : false,
+      imageUrl: map[BooksTable.imageUrl],
       lastRead: map[BooksTable.lastRead] != null
           ? DateTime.fromMicrosecondsSinceEpoch(map[BooksTable.lastRead] as int)
           : null,

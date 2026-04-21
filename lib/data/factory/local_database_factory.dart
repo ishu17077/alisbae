@@ -42,6 +42,7 @@ class LocalDatabaseFactory {
     ${BooksTable.currentRead} INTEGER DEFAULT 1 NOT NULL,
     ${BooksTable.addedOn} TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     ${BooksTable.isFavorite} INTEGER DEFAULT 0 NOT NULL,
+    ${BooksTable.imageUrl} TEXT,
     ${BooksTable.serverId} INTEGER,
     ${BooksTable.serverUrl} TEXT,
     ${BooksTable.lastRead} TIMESTAMP

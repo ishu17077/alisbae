@@ -1,74 +1,138 @@
 import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
+import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
+import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BookDetailsPage extends StatefulWidget {
-  final BookSearchResult result;
-  const BookDetailsPage({required this.result});
+  final BookSearchResult bookSearchResult;
+  final bool isDownloaded;
+  const BookDetailsPage({
+    required this.bookSearchResult,
+    this.isDownloaded = false,
+  });
 
   @override
   State<BookDetailsPage> createState() => _BookDetailsPageState();
 }
 
 class _BookDetailsPageState extends State<BookDetailsPage> {
+  late final DownloadBooksBloc _downloadBooksBloc;
+
   @override
   void initState() {
     super.initState();
-    context.read<BookDetailsCubit>().bookInfo(bookUrl: widget.result.postLink);
+    context.read<BookDetailsCubit>().bookInfo(
+      bookUrl: widget.bookSearchResult.postLink,
+    );
+    _downloadBooksBloc = context.read<DownloadBooksBloc>();
+    _downloadBooksBloc.add(DownloadBookEvent.initial(widget.bookSearchResult));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Book Info")),
-      body: BlocBuilder<BookDetailsCubit, BookDetails?>(
-        builder: (context, bookDetails) {
-          if (bookDetails == null) {
+      body: BlocBuilder<BookDetailsCubit, BookDetailsState>(
+        builder: (context, bookDetailsState) {
+          if (bookDetailsState is BookInitial) {
             return Center(child: CircularProgressIndicator());
+          } else if (bookDetailsState is BookFoundError) {
+            return Center(
+              child: Text("The book cannot be found for some reason"),
+            );
+          } else if (bookDetailsState is BookFound) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        height: 220,
+                        child: Image.network(
+                          bookDetailsState.bookDetails.imageLink,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      widget.bookSearchResult.bookTitle,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoText(
+                      label: 'Author',
+                      value: widget.bookSearchResult.author,
+                    ),
+                    _InfoText(
+                      label: 'Published',
+                      value: bookDetailsState.bookDetails.datePublished,
+                    ),
+                    _InfoText(
+                      label: 'Language',
+                      value: bookDetailsState.bookDetails.language,
+                    ),
+                    _InfoText(
+                      label: 'File Name',
+                      value:
+                          bookDetailsState.bookDetails.fileName
+                                  ?.trim()
+                                  .isNotEmpty ==
+                              true
+                          ? bookDetailsState.bookDetails.fileName!
+                          : 'N/A',
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Description',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(bookDetailsState.bookDetails.description),
+                  ],
+                ),
+              ),
+            );
+          }
+          return Center(child: Text("Uh! Oh! Do contact your unpaid dev."));
+        },
+      ),
+      floatingActionButton: BlocBuilder<DownloadBooksBloc, DownloadBookState>(
+        builder: (context, state) {
+          if (state is Downloading) {
+            return FloatingActionButton(
+              onPressed: () {},
+              child: CircularProgressIndicator(
+                value: state.count / state.total,
+              ),
+            );
           }
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: SizedBox(
-                      height: 220,
-                      child: Image.network(bookDetails.imageLink),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    bookDetails.bookName,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 12),
-                  _InfoText(label: 'Author', value: bookDetails.bookAuthor),
-                  _InfoText(
-                    label: 'Published',
-                    value: bookDetails.datePublished,
-                  ),
-                  _InfoText(label: 'Language', value: bookDetails.language),
-                  _InfoText(
-                    label: 'File Name',
-                    value: bookDetails.fileName?.trim().isNotEmpty == true
-                        ? bookDetails.fileName!
-                        : 'N/A',
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Description',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(bookDetails.description),
-                ],
-              ),
-            ),
+          if (state is DownloadSuccess) {
+            Future.delayed(Duration(seconds: 5)).then((value) {
+              _downloadBooksBloc.add(
+                DownloadBookEvent.initial(widget.bookSearchResult),
+              );
+            });
+            return FloatingActionButton(
+              onPressed: () {},
+              child: Icon(Icons.download_done),
+            );
+          }
+
+          if (state is AlreadyDownloaded) {
+            return FloatingActionButton(
+              onPressed: () {},
+              child: Icon(Icons.remove_shopping_cart),
+            );
+          }
+          return FloatingActionButton(
+            onPressed: () {},
+            child: Icon(Icons.download),
           );
         },
       ),

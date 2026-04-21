@@ -5,6 +5,7 @@ final class BooksTable {
   static const String author = "author";
   static const String currentRead = "current_read";
   static const String addedOn = "added_on";
+  static const String imageUrl = "image_url";
   static const String lastRead = "last_read";
   static const String bookPath = "book_path";
   static const String serverId = "server_id";

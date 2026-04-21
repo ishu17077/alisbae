@@ -23,6 +23,16 @@ class DownloadInitial extends DownloadBookState {
   List<Object?> get props => [];
 }
 
+final class AlreadyDownloaded extends DownloadBookState {
+  final BookStore bookStore;
+
+  const AlreadyDownloaded(this.bookStore);
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [bookStore];
+}
+
 class Downloading extends DownloadBookState {
   final int count;
   final int total;

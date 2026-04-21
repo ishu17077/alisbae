@@ -1,6 +1,7 @@
+import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
+import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
-import 'package:alisbae/ui/page/book_details/book_details_page.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,12 +16,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController searchController = TextEditingController();
-  late final SearchCubit searchCubit;
+  late final BookSearchCubit _searchCubit;
   bool isLoading = false;
   @override
   void initState() {
     // TODO: implement initState
-    searchCubit = context.read<SearchCubit>();
+    _searchCubit = context.read<BookSearchCubit>();
     super.initState();
   }
 
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Search books :)")),
-      body: BlocBuilder<SearchCubit, List<BookSearchResult>>(
+      body: BlocBuilder<BookSearchCubit, List<BookSearchResult>>(
         builder: (context, searchResults) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> {
                   autofocus: false,
                   decoration: InputDecoration(
                     label: Text("What thy must demand?"),
-                    hint: Text("WOWOOWOWOWOWOWW"),
+                    hint: Text("Procced!"),
 
                     //   labelStyle: Theme.of(context).textTheme.bodyMedium,
                     //   enabledBorder: OutlineInputBorder(
@@ -70,7 +71,7 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       isLoading = true;
                     });
-                    searchCubit.results(val).then((_) {
+                    _searchCubit.results(val).then((_) {
                       setState(() {
                         isLoading = false;
                       });
@@ -118,6 +119,39 @@ class _HomePageState extends State<HomePage> {
                         itemCount: searchResults.length,
                       )
                     : Text("Do search, please ;)"),
+                BlocBuilder<BookDownloadsCubit, List<BookStore>>(
+                  builder: (context, bookStores) {
+                    if (bookStores.isEmpty) {
+                      return SizedBox();
+                    }
+                    return GridView.builder(
+                      scrollDirection: Axis.vertical,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                      ),
+                      itemBuilder: (context, index) {
+                        BookStore bookStore = bookStores[index];
+                        return Card(
+                          elevation: 5.0,
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              bookStore.imageUrl != null
+                                  ? SizedBox(
+                                      width: 300,
+                                      child: Image.network(bookStore.imageUrl!),
+                                    )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ],
             ),
           );

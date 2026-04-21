@@ -13,4 +13,6 @@ abstract class IDataSource {
     required int id,
     required bool isFavorite,
   });
+  Future<BookStore?> searchBookByServerId(int serverId);
+  Future<BookStore?> searchBookById(int id);
 }
