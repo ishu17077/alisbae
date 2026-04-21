@@ -1,0 +1,154 @@
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Article",
+            "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#article",
+            "isPartOf": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/"
+            },
+            "author": {
+                "name": "Nicholas Liam",
+                "@id": "https://oceanofpdf.com/#/schema/person/d1f97dba617c5ea2e3fa00a98536c47e"
+            },
+            "headline": "[PDF] Wartime Download",
+            "datePublished": "2026-02-01T01:49:26+00:00",
+            "dateModified": "2026-02-01T01:49:26+00:00",
+            "mainEntityOfPage": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/"
+            },
+            "wordCount": 194,
+            "publisher": {
+                "@id": "https://oceanofpdf.com/#organization"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#primaryimage"
+            },
+            "thumbnailUrl": "https://media.oceanofpdf.com/2026/01/PDF-EPUB-Wartime-by-Milovan-Djilas-Download.jpg",
+            "articleSection": [
+                "English",
+                "History",
+                "Memoir",
+                "Milovan Djilas",
+                "Nonfiction",
+                "War",
+                "World War II"
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "WebPage",
+            "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/",
+            "url": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/",
+            "name": "[PDF] Wartime Download",
+            "isPartOf": {
+                "@id": "https://oceanofpdf.com/#website"
+            },
+            "primaryImageOfPage": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#primaryimage"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#primaryimage"
+            },
+            "thumbnailUrl": "https://media.oceanofpdf.com/2026/01/PDF-EPUB-Wartime-by-Milovan-Djilas-Download.jpg",
+            "datePublished": "2026-02-01T01:49:26+00:00",
+            "dateModified": "2026-02-01T01:49:26+00:00",
+            "description": "Download Book \"Wartime\" by Author \"Milovan Djilas\" in [PDF] [EPUB]. Original Title ISBN # \"9780156947121\" and ASIN # \"0156947129\" published on \"January 1, 1977\" in Edition Language: \"English\". Get Full eBook File name \"Wartime_-_Milovan_Djilas.pdf .epub\" Format Complete Free. Genres: \"History, Memoir, Nonfiction, War, World War II\".",
+            "breadcrumb": {
+                "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#breadcrumb"
+            },
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "ReadAction",
+                    "target": [
+                        "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/"
+                    ]
+                }
+            ]
+        },
+        {
+            "@type": "ImageObject",
+            "inLanguage": "en-US",
+            "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#primaryimage",
+            "url": "https://media.oceanofpdf.com/2026/01/PDF-EPUB-Wartime-by-Milovan-Djilas-Download.jpg",
+            "contentUrl": "https://media.oceanofpdf.com/2026/01/PDF-EPUB-Wartime-by-Milovan-Djilas-Download.jpg",
+            "width": 318,
+            "height": 475
+        },
+        {
+            "@type": "BreadcrumbList",
+            "@id": "https://oceanofpdf.com/authors/milovan-djilas/pdf-wartime-download/#breadcrumb",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://oceanofpdf.com/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Authors",
+                    "item": "https://oceanofpdf.com/category/authors/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "Milovan Djilas",
+                    "item": "https://oceanofpdf.com/category/authors/milovan-djilas/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 4,
+                    "name": "[PDF] Wartime Download"
+                }
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https://oceanofpdf.com/#website",
+            "url": "https://oceanofpdf.com/",
+            "name": "OceanofPDF",
+            "description": "Free Download Books",
+            "publisher": {
+                "@id": "https://oceanofpdf.com/#organization"
+            },
+            "potentialAction": [
+                {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://oceanofpdf.com/?s={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                }
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Organization",
+            "@id": "https://oceanofpdf.com/#organization",
+            "name": "OceanofPDF",
+            "url": "https://oceanofpdf.com/",
+            "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://oceanofpdf.com/#/schema/logo/image/",
+                "url": "https://oceanofpdf.com/wp-content/uploads/2022/09/Logo.png",
+                "contentUrl": "https://oceanofpdf.com/wp-content/uploads/2022/09/Logo.png",
+                "width": 192,
+                "height": 192,
+                "caption": "OceanofPDF"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/#/schema/logo/image/"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://oceanofpdf.com/#/schema/person/d1f97dba617c5ea2e3fa00a98536c47e",
+            "name": "Nicholas Liam"
+        }
+    ]
+}

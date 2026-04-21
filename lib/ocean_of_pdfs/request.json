@@ -1,0 +1,160 @@
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Article",
+            "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#article",
+            "isPartOf": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/"
+            },
+            "author": {
+                "name": "Nicholas Liam",
+                "@id": "https://oceanofpdf.com/#/schema/person/d1f97dba617c5ea2e3fa00a98536c47e"
+            },
+            "headline": "[PDF] We3 Download",
+            "datePublished": "2022-12-13T05:07:27+00:00",
+            "dateModified": "2022-12-13T05:07:27+00:00",
+            "mainEntityOfPage": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/"
+            },
+            "wordCount": 310,
+            "publisher": {
+                "@id": "https://oceanofpdf.com/#organization"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#primaryimage"
+            },
+            "thumbnailUrl": "https://media.oceanofpdf.com/2022/12/PDF-EPUB-We3-by-Grant-Morrison-Download.jpg",
+            "articleSection": [
+                "Animals",
+                "Best Books of the 21st Century",
+                "Comic Book",
+                "Comics",
+                "Comix",
+                "Fantasy",
+                "Fiction",
+                "Grant Morrison",
+                "Graphic Novels",
+                "Graphic Novels Comics",
+                "Science Fiction",
+                "Sequential Art",
+                "War"
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "WebPage",
+            "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/",
+            "url": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/",
+            "name": "[PDF] We3 Download",
+            "isPartOf": {
+                "@id": "https://oceanofpdf.com/#website"
+            },
+            "primaryImageOfPage": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#primaryimage"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#primaryimage"
+            },
+            "thumbnailUrl": "https://media.oceanofpdf.com/2022/12/PDF-EPUB-We3-by-Grant-Morrison-Download.jpg",
+            "datePublished": "2022-12-13T05:07:27+00:00",
+            "dateModified": "2022-12-13T05:07:27+00:00",
+            "description": "Download Book \"We3\" by Author \"Grant Morrison\" in [PDF] [EPUB]. Original Title ISBN \"\" published on \"2005-7-1\" in Edition Language: \"English\". Get Full eBook File name \"We3_-_Grant_Morrison.pdf .epub\" Format Complete Free. Genres: \"Animals, Comic Book, Comics, Comix, Fantasy, Fiction, Graphic Novels, Graphic Novels Comics, Science Fiction, Sequential Art, War\".",
+            "breadcrumb": {
+                "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#breadcrumb"
+            },
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "ReadAction",
+                    "target": [
+                        "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/"
+                    ]
+                }
+            ]
+        },
+        {
+            "@type": "ImageObject",
+            "inLanguage": "en-US",
+            "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#primaryimage",
+            "url": "https://media.oceanofpdf.com/2022/12/PDF-EPUB-We3-by-Grant-Morrison-Download.jpg",
+            "contentUrl": "https://media.oceanofpdf.com/2022/12/PDF-EPUB-We3-by-Grant-Morrison-Download.jpg",
+            "width": 310,
+            "height": 475
+        },
+        {
+            "@type": "BreadcrumbList",
+            "@id": "https://oceanofpdf.com/authors/grant-morrison/pdf-we3-download/#breadcrumb",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://oceanofpdf.com/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Authors",
+                    "item": "https://oceanofpdf.com/category/authors/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "Grant Morrison",
+                    "item": "https://oceanofpdf.com/category/authors/grant-morrison/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 4,
+                    "name": "[PDF] We3 Download"
+                }
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https://oceanofpdf.com/#website",
+            "url": "https://oceanofpdf.com/",
+            "name": "OceanofPDF",
+            "description": "Free Download Books",
+            "publisher": {
+                "@id": "https://oceanofpdf.com/#organization"
+            },
+            "potentialAction": [
+                {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://oceanofpdf.com/?s={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                }
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Organization",
+            "@id": "https://oceanofpdf.com/#organization",
+            "name": "OceanofPDF",
+            "url": "https://oceanofpdf.com/",
+            "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://oceanofpdf.com/#/schema/logo/image/",
+                "url": "https://oceanofpdf.com/wp-content/uploads/2022/09/Logo.png",
+                "contentUrl": "https://oceanofpdf.com/wp-content/uploads/2022/09/Logo.png",
+                "width": 192,
+                "height": 192,
+                "caption": "OceanofPDF"
+            },
+            "image": {
+                "@id": "https://oceanofpdf.com/#/schema/logo/image/"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://oceanofpdf.com/#/schema/person/d1f97dba617c5ea2e3fa00a98536c47e",
+            "name": "Nicholas Liam"
+        }
+    ]
+}
