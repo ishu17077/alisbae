@@ -58,10 +58,15 @@ class SqfliteDatasourceImpl implements IDataSource {
   }) async {
     lastRead ??= DateTime.now();
 
-    await _db.update(BooksTable.tableName, {
-      BooksTable.lastRead: lastRead.millisecondsSinceEpoch,
-      BooksTable.currentRead: currentRead,
-    });
+    await _db.update(
+      BooksTable.tableName,
+      {
+        BooksTable.lastRead: lastRead.millisecondsSinceEpoch,
+        BooksTable.currentRead: currentRead,
+      },
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+    );
   }
 
   @override

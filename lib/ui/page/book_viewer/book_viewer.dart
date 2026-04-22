@@ -18,6 +18,8 @@ class BookViewer extends StatefulWidget {
 class _BookViewerState extends State<BookViewer> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   late final BookBloc _bookBloc;
+  late final AppLifecycleListener _listener;
+  late bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
   bool isSaveLoading = false;
   void _saveWithAnnotations() async {
@@ -33,14 +35,55 @@ class _BookViewerState extends State<BookViewer> {
   }
 
   @override
+  void dispose() {
+    _bookBloc.add(
+      BookEvent.updateLastRead(
+        widget.bookStore.id!,
+        lastRead: DateTime.now(),
+        currentRead: _pdfViewerController.pageNumber,
+      ),
+    );
+    super.dispose();
+  }
+
+  @override
   void initState() {
     _bookBloc = context.read<BookBloc>();
+    _listener = AppLifecycleListener(
+      onPause: () => BookEvent.updateLastRead(
+        widget.bookStore.id!,
+        lastRead: DateTime.now(),
+        currentRead: _pdfViewerController.pageNumber,
+      ),
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(widget.bookStore.name),
+            Switch(
+              value: isDarkMode,
+              thumbIcon: WidgetStateProperty.resolveWith<Icon>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Icon(Icons.dark_mode);
+                }
+                return Icon(Icons.sunny);
+              }),
+              onChanged: (val) => {
+                setState(() {
+                  isDarkMode = val;
+                }),
+              },
+            ),
+          ],
+        ),
+      ),
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? Colors.black
           : Colors.white60,
@@ -48,19 +91,14 @@ class _BookViewerState extends State<BookViewer> {
         child: Stack(
           children: [
             ColorFiltered(
-              colorFilter: Theme.of(context).brightness == Brightness.dark
+              colorFilter: isDarkMode
                   ? ColorFilter.matrix([
                       -1, 0, 0, 0, 255, // Red
                       0, -1, 0, 0, 255, // Green
                       0, 0, -1, 0, 255, // Blue
                       0, 0, 0, 1, 0, // Alpha
                     ])
-                  : ColorFilter.matrix([
-                      -1, 0, 0, 0, 255, // Red
-                      0, -1, 0, 0, 255, // Green
-                      0, 0, -1, 0, 255, // Blue
-                      0, 0, 0, 1, 0, // Alpha
-                    ]),
+                  : ColorFilter.mode(Colors.black, BlendMode.difference),
               child: SfPdfViewer.file(
                 File(widget.bookStore.bookPath),
                 enableDoubleTapZooming: true,
@@ -71,15 +109,6 @@ class _BookViewerState extends State<BookViewer> {
                 canShowScrollStatus: true,
                 enableHyperlinkNavigation: true,
                 controller: _pdfViewerController,
-                onPageChanged: (details) {
-                  _bookBloc.add(
-                    BookEvent.updateLastRead(
-                      widget.bookStore.id!,
-                      lastRead: DateTime.now(),
-                      currentRead: details.newPageNumber,
-                    ),
-                  );
-                },
                 initialPageNumber: widget.bookStore.currentRead,
               ),
             ),
@@ -91,7 +120,6 @@ class _BookViewerState extends State<BookViewer> {
                   _buildAnnotationRibbon(),
                   TextButton(
                     onPressed: !isSaveLoading ? _saveWithAnnotations : () {},
-
                     style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(Colors.black87),
                     ),

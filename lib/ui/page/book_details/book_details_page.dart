@@ -58,6 +58,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                       if (state is BookDislikeSuccess) {
                         downloadBookState.bookStore.isFavorite = false;
                       }
+                        downloadBookState.bookStore.isFavorite = false;
                       return IconButton(
                         icon: Icon(
                           downloadBookState.bookStore.isFavorite

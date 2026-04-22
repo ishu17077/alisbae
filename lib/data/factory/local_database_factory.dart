@@ -23,13 +23,31 @@ class LocalDatabaseFactory {
     String databasePath = await getDatabasesPath();
     String dbPath = join(databasePath, "book_details.db");
 
-    _database = await openDatabase(dbPath, onCreate: _populateDb, version: 1);
+    _database = await openDatabase(
+      dbPath,
+      onCreate: _populateDb,
+      version: 2,
+      onUpgrade: _upgradeDb,
+    );
     return _database!;
   }
 
   Future<void> _populateDb(Database db, int version) async {
     await _createBooksTable(db);
     await _createIndices(db);
+  }
+
+  Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion == 1 && newVersion == 2) {
+      await db.transaction((txn) async {
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.rating} INTEGER CHECK (${BooksTable.rating} >= 1 AND ${BooksTable.rating} <= 5);""",
+        );
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.review} TEXT;""",
+        );
+      });
+    }
   }
 
   Future<void> _createBooksTable(Database db) async {
@@ -45,7 +63,9 @@ class LocalDatabaseFactory {
     ${BooksTable.imageUrl} TEXT,
     ${BooksTable.serverId} INTEGER,
     ${BooksTable.serverUrl} TEXT,
-    ${BooksTable.lastRead} TIMESTAMP
+    ${BooksTable.lastRead} TIMESTAMP,
+    ${BooksTable.rating} INTEGER CHECK (${BooksTable.rating} >= 1 AND ${BooksTable.rating} <= 5),
+    ${BooksTable.review} TEXT,
     )""")
         .then((_) {
           debugPrint("Successfully created ${BooksTable.tableName} table");

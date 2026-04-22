@@ -10,5 +10,7 @@ final class BooksTable {
   static const String bookPath = "book_path";
   static const String serverId = "server_id";
   static const String serverUrl = "server_url";
+  static const String rating = "rating";
+  static const String review = "review";
   static const String isFavorite = "is_favorite";
 }

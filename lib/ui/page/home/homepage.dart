@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
@@ -19,6 +21,7 @@ class _HomePageState extends State<HomePage>
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
+  final Set<String> _warmedImageUrls = <String>{};
   bool isLoading = false;
   @override
   void initState() {
@@ -36,6 +39,7 @@ class _HomePageState extends State<HomePage>
       appBar: AppBar(title: Text("Search books :)")),
       body: BlocBuilder<BookSearchCubit, List<BookSearchResult>>(
         builder: (context, searchResults) {
+          _warmUpImages(searchResults.map((result) => result.postImage));
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Column(
@@ -101,7 +105,14 @@ class _HomePageState extends State<HomePage>
                                 searchResult,
                               );
                             },
-                            leading: Image.network(searchResult.postImage),
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: _networkCover(
+                                url: searchResult.postImage,
+                                width: 52,
+                                height: 52,
+                              ),
+                            ),
                             title: Text(
                               searchResult.bookTitle,
                               style: Theme.of(context).textTheme.titleMedium,
@@ -126,6 +137,11 @@ class _HomePageState extends State<HomePage>
                     : Text("Do search, please ;)"),
                 BlocBuilder<BookDownloadsCubit, List<BookStore>>(
                   builder: (context, bookStores) {
+                    _warmUpImages(
+                      bookStores
+                          .map((book) => book.imageUrl)
+                          .whereType<String>(),
+                    );
                     if (bookStores.isEmpty) {
                       return SizedBox();
                     }
@@ -152,9 +168,11 @@ class _HomePageState extends State<HomePage>
                               elevation: 5.0,
 
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10.0,
-                                  vertical: 2.0,
+                                padding: const EdgeInsets.only(
+                                  top: 0.0,
+                                  left: 2.0,
+                                  right: 2.0,
+                                  bottom: 10.0,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -179,10 +197,9 @@ class _HomePageState extends State<HomePage>
                                           onPressed: () async {
                                             await _bookDownloadsCubit
                                                 .bookViewModel
-                                                .dataSource
-                                                .updateFavoriteStatus(
+                                                .updateLikeStatus(
                                                   id: bookStore.id!,
-                                                  isFavorite:
+                                                  isLiked:
                                                       !bookStore.isFavorite,
                                                 );
                                             _bookDownloadsCubit.getBooks();
@@ -199,13 +216,14 @@ class _HomePageState extends State<HomePage>
                                     bookStore.imageUrl != null
                                         ? Flexible(
                                             flex: 2,
-                                            child: SizedBox(
-                                              width: 350,
-                                              child: bookStore.imageUrl != null
-                                                  ? Image.network(
-                                                      bookStore.imageUrl!,
-                                                    )
-                                                  : SizedBox(),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: _networkCover(
+                                                url: bookStore.imageUrl!,
+                                                height: null,
+                                                width: 160,
+                                              ),
                                             ),
                                           )
                                         : SizedBox(),
@@ -259,6 +277,64 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  // TODO: implement wantKeepAlive
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   bool get wantKeepAlive => true;
+
+  void _warmUpImages(Iterable<String> urls) {
+    for (final rawUrl in urls) {
+      final String url = rawUrl.trim();
+      if (url.isEmpty || _warmedImageUrls.contains(url)) {
+        continue;
+      }
+      _warmedImageUrls.add(url);
+      unawaited(precacheImage(NetworkImage(url), context));
+    }
+  }
+
+  Widget _networkCover({
+    required String url,
+    required double width,
+    required double? height,
+    BoxFit fit = BoxFit.fitHeight,
+  }) {
+    final double dpr = MediaQuery.devicePixelRatioOf(context);
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      cacheWidth: (width * dpr).round(),
+      // cacheHeight: (height ?? 180 * dpr).round(),
+      filterQuality: FilterQuality.low,
+      gaplessPlayback: true,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return SizedBox(
+          width: width,
+          height: height,
+          child: const Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return SizedBox(
+          width: width,
+          height: height,
+          child: const Center(child: Icon(Icons.broken_image_outlined)),
+        );
+      },
+    );
+  }
 }

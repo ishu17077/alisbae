@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
@@ -19,7 +18,7 @@ class DataCrawler {
     caseSensitive: false,
   );
 
-  final RegExp _downloadLinkMatch = RegExp(r'content="[^"]*url=([^"]+)"');
+  CancelToken? _searchCancelToken;
   final Dio dio = Dio();
 
   Directory _dir;
@@ -36,15 +35,28 @@ class DataCrawler {
   Future<List<Map<String, dynamic>>> search({
     required String searchParam,
   }) async {
+    final activeCancelToken = CancelToken();
     try {
       String apiUrl = "https://oceanofpdf.com/wp-admin/admin-ajax.php";
-      http.Response res = await http.post(
-        Uri.parse(apiUrl),
-        body:
+      final previousToken = _searchCancelToken;
+      _searchCancelToken = activeCancelToken;
+      previousToken?.cancel('Cancelled due to a newer search request.');
+      Response res = await dio.post(
+        apiUrl,
+        data:
             "action=ajaxy_sf&sf_value=${Uri.encodeQueryComponent(searchParam)}&search=true",
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        options: Options(
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        ),
+        cancelToken: activeCancelToken,
       );
-      var resp = jsonDecode(res.body)["post"][0]["all"];
+
+      // A newer search may have started while this request was in-flight.
+      if (!identical(_searchCancelToken, activeCancelToken)) {
+        return [];
+      }
+
+      var resp = jsonDecode(res.data)["post"][0]["all"];
       if (resp == null) {
         Fluttertoast.showToast(
           msg: "Please contact your personal unpaid developer. Wink.",
@@ -53,11 +65,25 @@ class DataCrawler {
       return (resp as List)
           .map((resp) => resp as Map<String, dynamic>)
           .toList();
-    } catch (e) {
+    } on DioException catch (e) {
+      if (CancelToken.isCancel(e)) {
+        return [];
+      }
+      debugPrint(e.toString());
       Fluttertoast.showToast(
         msg: "Please contact your personal unpaid developer. Wink. $e",
       );
       return [];
+    } catch (e) {
+      debugPrint(e.toString());
+      Fluttertoast.showToast(
+        msg: "Please contact your personal unpaid developer. Wink. $e",
+      );
+      return [];
+    } finally {
+      if (_searchCancelToken == activeCancelToken) {
+        _searchCancelToken = null;
+      }
     }
   }
 

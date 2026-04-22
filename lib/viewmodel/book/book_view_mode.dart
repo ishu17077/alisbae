@@ -46,7 +46,9 @@ class BookViewModel {
         serverUrl: bookSearchResult.postLink,
       );
       final id = await dataSource.addBook(book);
-      return BookStore.fromJSON({...book.toJSON(), "id": id});
+      final bookReturn = BookStore.fromJSON({...book.toJSON(), "id": id});
+      books.add(bookReturn);
+      return bookReturn;
     } catch (e) {
       Fluttertoast.showToast(
         msg: "Please contact your personal unpaid developer. Wink. $e",
@@ -71,17 +73,45 @@ class BookViewModel {
     );
   }
 
-  Future<List<BookStore>> listAllBooksOffline() async {
+  Future<List<BookStore>> listAllBooksOffline({
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh && books.isNotEmpty) {
+      return books;
+    }
     books = await dataSource.getDownloadedBooks();
     return books;
   }
 
   Future<void> deleteBook(int id) async {
+    books.removeWhere((book) => book.id == id);
     final book = await dataSource.searchBookById(id);
     if (book == null) {
       return;
     }
     await dataSource.deleteBook(book.id!);
     await _dataCrawler.deleteDownload(book.bookPath);
+  }
+
+  Future<void> updateLastRead({
+    required int id,
+    required int currentRead,
+    required DateTime lastRead,
+  }) async {
+    final book = books.firstWhere((book) => book.id == id);
+    book.currentRead = currentRead;
+    book.lastRead = lastRead;
+
+    await dataSource.updateLastRead(id: id, currentRead: currentRead);
+  }
+
+  Future<void> updateLikeStatus({
+    required int id,
+    required bool isLiked,
+  }) async {
+    final book = books.firstWhere((book) => book.id == id);
+    book.isFavorite = isLiked;
+
+    await dataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
   }
 }

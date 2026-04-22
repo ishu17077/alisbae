@@ -34,9 +34,8 @@ class CompositionRoot {
     _dir = await getApplicationDocumentsDirectory();
     _dataCrawler = DataCrawler(_dir);
     LocalDatabaseFactory localDatabaseFactory = LocalDatabaseFactory();
-    _dataSource = SqfliteDatasourceImpl(
-      await localDatabaseFactory.getDatabase(),
-    );
+    final db = await localDatabaseFactory.getDatabase();
+    _dataSource = SqfliteDatasourceImpl(db);
     _bookViewModel = BookViewModel(_dataSource, _dataCrawler);
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,

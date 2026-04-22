@@ -9,6 +9,6 @@ class BookDownloadsCubit extends Cubit<List<BookStore>> {
 
   Future<void> getBooks() async {
     final books = await bookViewModel.listAllBooksOffline();
-    emit(books);
+    emit([...books]);
   }
 }
