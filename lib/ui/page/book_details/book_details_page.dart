@@ -52,27 +52,31 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                 if (downloadBookState is AlreadyDownloaded) {
                   return BlocBuilder<BookBloc, BookState>(
                     builder: (context, state) {
+                      bool isLiked = downloadBookState.bookStore.isFavorite;
                       if (state is BookLikeSuccess) {
-                        downloadBookState.bookStore.isFavorite = true;
+                        isLiked = true;
                       }
                       if (state is BookDislikeSuccess) {
-                        downloadBookState.bookStore.isFavorite = false;
+                        isLiked = false;
                       }
-                        downloadBookState.bookStore.isFavorite = false;
                       return IconButton(
-                        icon: Icon(
-                          downloadBookState.bookStore.isFavorite
-                              ? Icons.favorite
-                              : Icons.favorite_outline,
-                          color: downloadBookState.bookStore.isFavorite
-                              ? Colors.red
-                              : Theme.of(context).brightness == Brightness.light
-                              ? Colors.black
-                              : Colors.white,
+                        icon: AnimatedScale(
+                          scale: isLiked ? 1.2 : 1.0,
+                          curve: Curves.easeOut,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_outline,
+                            color: isLiked
+                                ? Colors.red
+                                : Theme.of(context).brightness ==
+                                      Brightness.light
+                                ? Colors.black
+                                : Colors.white,
+                          ),
                         ),
                         onPressed: () {
                           _bookBloc.add(
-                            downloadBookState.bookStore.isFavorite
+                            isLiked
                                 ? BookEvent.dislikeBook(
                                     downloadBookState.bookStore.id!,
                                   )

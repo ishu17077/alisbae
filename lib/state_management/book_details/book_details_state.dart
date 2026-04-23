@@ -14,7 +14,6 @@ final class BookFound extends BookDetailsState {
 
   const BookFound(this.bookDetails, this.bookStore);
   @override
-  // TODO: implement props
   List<Object?> get props => [bookStore, bookDetails];
 }
 

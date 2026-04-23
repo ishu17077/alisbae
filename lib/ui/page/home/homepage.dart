@@ -19,6 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController searchController = TextEditingController();
+  final GlobalKey<AnimatedGridState> _gridKey = GlobalKey<AnimatedGridState>();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
   final Set<String> _warmedImageUrls = <String>{};
@@ -37,241 +38,185 @@ class _HomePageState extends State<HomePage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(title: Text("Search books :)")),
-      body: BlocBuilder<BookSearchCubit, List<BookSearchResult>>(
-        builder: (context, searchResults) {
-          _warmUpImages(searchResults.map((result) => result.postImage));
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              children: [
-                TextField(
-                  controller: searchController,
-                  autofocus: false,
-                  decoration: InputDecoration(
-                    label: Text("What thy must demand?"),
-                    hint: Text("Procced!"),
-
-                    //   labelStyle: Theme.of(context).textTheme.bodyMedium,
-                    //   enabledBorder: OutlineInputBorder(
-                    //     borderRadius: BorderRadius.circular(20),
-                    //     borderSide: BorderSide(color: Colors.white, width: 2.5),
-                    //   ),
-
-                    //   focusedBorder: OutlineInputBorder(
-                    //     borderRadius: BorderRadius.circular(20),
-                    //     borderSide: BorderSide(width: 2.5),
-                    //   ),
-                    //   border: OutlineInputBorder(
-                    //     borderRadius: BorderRadius.circular(20),
-                    //     gapPadding: 5,
-                    //     borderSide: BorderSide(
-                    //       width: 2.5,
-                    //       style: BorderStyle.solid,
-                    //     ),
-                    //   ),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: CustomScrollView(
+          physics: BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _buildTextField()),
+            _buildSliverSearchResults(),
+            BlocConsumer<BookDownloadsCubit, List<BookStore>>(
+              listener: (context, bookStores) {
+                if (bookStores.isNotEmpty) {
+                  _warmUpImages(
+                    bookStores.map((book) => book.imageUrl).whereType<String>(),
+                  );
+                }
+              },
+              builder: (context, bookStores) {
+                if (bookStores.isEmpty) {
+                  return SizedBox();
+                }
+                return SliverAnimatedGrid(
+                  key: _gridKey,
+                  initialItemCount: bookStores.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
                   ),
-                  onChanged: (val) async {
-                    val = val.trim();
-                    if (val == "") {
-                      setState(() {});
-                      return;
-                    }
+                  itemBuilder: (context, index, animation) {
+                    BookStore bookStore = bookStores[index];
 
-                    setState(() {
-                      isLoading = true;
-                    });
-                    _searchCubit.results(val).then((_) {
-                      setState(() {
-                        isLoading = false;
-                      });
-                    });
-                  },
-                ),
-                SizedBox(height: 20),
-                searchController.text.trim() == ""
-                    ? Container(
-                        // Here previous reads
-                      )
-                    : isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : searchResults.isNotEmpty
-                    ? ListView.builder(
-                        itemBuilder: (context, index) {
-                          var searchResult = searchResults[index];
-                          return ListTile(
-                            onTap: () async {
-                              widget._router.onShowBookDetailsUi(
-                                context,
-                                searchResult,
-                              );
-                            },
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: _networkCover(
-                                url: searchResult.postImage,
-                                width: 52,
-                                height: 52,
-                              ),
-                            ),
-                            title: Text(
-                              searchResult.bookTitle,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            subtitle: Text(
-                              searchResult.author,
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                            trailing: SizedBox(
-                              width: 30,
-                              child: Text(
-                                searchResult.postTitle,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          );
-                        },
-                        shrinkWrap: true,
-
-                        itemCount: searchResults.length,
-                      )
-                    : Text("Do search, please ;)"),
-                BlocBuilder<BookDownloadsCubit, List<BookStore>>(
-                  builder: (context, bookStores) {
-                    _warmUpImages(
-                      bookStores
-                          .map((book) => book.imageUrl)
-                          .whereType<String>(),
-                    );
-                    if (bookStores.isEmpty) {
-                      return SizedBox();
-                    }
-                    return Expanded(
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: BouncingScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                        ),
-                        itemBuilder: (context, index) {
-                          BookStore bookStore = bookStores[index];
-                          return InkWell(
-                            onTap: () {
-                              widget._router.onShowBookViewerUi(
-                                context,
-                                bookStore,
-                              );
-                            },
-                            child: Card(
-                              elevation: 5.0,
-
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 0.0,
-                                  left: 2.0,
-                                  right: 2.0,
-                                  bottom: 10.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        IconButton(
-                                          onPressed: () async {
-                                            await _bookDownloadsCubit
-                                                .bookViewModel
-                                                .deleteBook(bookStore.id!);
-                                            _bookDownloadsCubit.getBooks();
-                                          },
-                                          icon: Icon(Icons.close),
-                                        ),
-                                        IconButton(
-                                          onPressed: () async {
-                                            await _bookDownloadsCubit
-                                                .bookViewModel
-                                                .updateLikeStatus(
-                                                  id: bookStore.id!,
-                                                  isLiked:
-                                                      !bookStore.isFavorite,
-                                                );
-                                            _bookDownloadsCubit.getBooks();
-                                          },
-                                          icon: bookStore.isFavorite
-                                              ? Icon(
-                                                  Icons.favorite,
-                                                  color: Colors.red,
-                                                )
-                                              : Icon(Icons.favorite_outline),
-                                        ),
-                                      ],
-                                    ),
-                                    bookStore.imageUrl != null
-                                        ? Flexible(
-                                            flex: 2,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              child: _networkCover(
-                                                url: bookStore.imageUrl!,
-                                                height: null,
-                                                width: 160,
-                                              ),
-                                            ),
-                                          )
-                                        : SizedBox(),
-                                    Center(
-                                      child: Text(
-                                        bookStore.name,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(fontSize: 14),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Text(
-                                        "Author: ${bookStore.author}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall
-                                            ?.copyWith(fontSize: 12),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Text(
-                                        "On page: ${bookStore.currentRead}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(fontSize: 10),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        itemCount: bookStores.length,
-                      ),
+                    return ScaleTransition(
+                      scale: animation,
+                      child: _buildBookCard(context, bookStore, index),
                     );
                   },
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+
+  TextField _buildTextField() {
+    return TextField(
+      controller: searchController,
+      autofocus: false,
+      decoration: InputDecoration(
+        label: Text("What thy must demand?"),
+        hint: Text("Procced!"),
+      ),
+      onChanged: (val) async {
+        val = val.trim();
+        if (val == "") {
+          setState(() {});
+          return;
+        }
+
+        setState(() {
+          isLoading = true;
+        });
+        _searchCubit.results(val).then((_) {
+          setState(() {
+            isLoading = false;
+          });
+        });
+      },
+    );
+  }
+
+  Widget _buildBookCard(BuildContext context, BookStore bookStore, int index) {
+    bool isLiked = bookStore.isFavorite;
+    return InkWell(
+      onTap: () {
+        widget._router.onShowBookViewerUi(context, bookStore);
+      },
+      child: Card(
+        elevation: 5.0,
+
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 0.0,
+            left: 2.0,
+            right: 2.0,
+            bottom: 10.0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () async {
+                      _gridKey.currentState!.removeItem(
+                        index,
+                        (context, animation) => SizeTransition(
+                          sizeFactor: animation,
+                          child: ScaleTransition(
+                            scale: animation,
+                            child: _buildBookCard(context, bookStore, index),
+                          ),
+                        ),
+                      );
+                      _bookDownloadsCubit.bookViewModel.deleteBook(
+                        bookStore.id!,
+                      );
+                      _bookDownloadsCubit.getBooks();
+                    },
+
+                    icon: Icon(Icons.close),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLiked = !isLiked;
+                      });
+                      _bookDownloadsCubit.bookViewModel.updateLikeStatus(
+                        id: bookStore.id!,
+                        isLiked: isLiked,
+                      );
+                    },
+                    icon: AnimatedScale(
+                      scale: isLiked ? 1.2 : 1.0,
+                      curve: Curves.easeOut,
+                      duration: const Duration(milliseconds: 200),
+                      child: isLiked
+                          ? Icon(Icons.favorite, color: Colors.red)
+                          : Icon(Icons.favorite_outline),
+                    ),
+                  ),
+                ],
+              ),
+              bookStore.imageUrl != null
+                  ? Flexible(
+                      flex: 2,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _networkCover(
+                          url: bookStore.imageUrl!,
+                          height: null,
+                          width: 160,
+                        ),
+                      ),
+                    )
+                  : SizedBox(),
+              Center(
+                child: Text(
+                  bookStore.name,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Center(
+                child: Text(
+                  "Author: ${bookStore.author}",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Center(
+                child: Text(
+                  "On page: ${bookStore.currentRead}",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontSize: 10),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -334,6 +279,61 @@ class _HomePageState extends State<HomePage>
           height: height,
           child: const Center(child: Icon(Icons.broken_image_outlined)),
         );
+      },
+    );
+  }
+
+  Widget _buildSliverSearchResults() {
+    return BlocConsumer<BookSearchCubit, List<BookSearchResult>>(
+      listener: (context, state) {
+        if (state.isNotEmpty) {
+          _warmUpImages(state.map((result) => result.postImage));
+        }
+      },
+      builder: (context, searchResults) {
+        return searchController.text.trim() == ""
+            ? SliverToBoxAdapter(child: SizedBox())
+            : isLoading
+            ? SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : searchResults.isNotEmpty
+            ? SliverList.builder(
+                itemBuilder: (context, index) {
+                  var searchResult = searchResults[index];
+                  return ListTile(
+                    onTap: () async {
+                      widget._router.onShowBookDetailsUi(context, searchResult);
+                    },
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: _networkCover(
+                        url: searchResult.postImage,
+                        width: 52,
+                        height: 52,
+                      ),
+                    ),
+                    title: Text(
+                      searchResult.bookTitle,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    subtitle: Text(
+                      searchResult.author,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    trailing: SizedBox(
+                      width: 30,
+                      child: Text(
+                        searchResult.postTitle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
+                },
+
+                itemCount: searchResults.length,
+              )
+            : SliverToBoxAdapter(child: Text("Do search, please ;)"));
       },
     );
   }

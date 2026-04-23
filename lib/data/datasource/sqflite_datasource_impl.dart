@@ -98,4 +98,41 @@ class SqfliteDatasourceImpl implements IDataSource {
 
     return BookStore.fromJSON(bookMap.first);
   }
+
+  @override
+  Future<void> setImagePath(int id, String path) async {
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.imagePath: path},
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+    );
+  }
+
+  @override
+  Future<void> setImageUrl(int id, String imageUrl) async {
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.imageUrl: imageUrl},
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+    );
+  }
+
+  @override
+  Future<void> setRatingandReview(int id, int? rating, String? review) async {
+    await _db.update(
+      BooksTable.tableName,
+      {
+        BooksTable.rating: rating,
+        BooksTable.review: review != null
+            ? review.isEmpty
+                  ? null
+                  : review
+            : null,
+      },
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+    );
+  }
 }

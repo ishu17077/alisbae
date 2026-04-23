@@ -24,7 +24,6 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
 
     on<DownloadBookStart>((event, emit) async {
       emit(DownloadBookState.downloading(0, 100));
-
       final result = await _bookViewModel.downloadBook(
         bookDetails: event.bookDetails,
         bookSearchResult: event.bookSearchResult,

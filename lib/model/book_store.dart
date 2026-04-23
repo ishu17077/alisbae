@@ -14,6 +14,10 @@ class BookStore {
   int? serverId;
   String? imageUrl;
   String? serverUrl;
+  int? rating;
+  String? review;
+  String? imagePath;
+  String? description;
 
   BookStore({
     required this.name,
@@ -26,11 +30,29 @@ class BookStore {
     this.serverId,
     this.serverUrl,
     DateTime? addedOn,
+    this.rating,
+    this.review,
+    this.imagePath,
+    this.description,
   }) {
     if (imageUrl == null || imageUrl!.isEmpty) {
       imageUrl = null;
     }
     this.addedOn = addedOn ?? DateTime.now();
+
+    if (rating == null || rating == 0 || rating! < 0 || rating! > 5) {
+      rating = null;
+    }
+
+    if (review == null || review!.isEmpty) {
+      review = null;
+    }
+    if (imagePath == null || imagePath!.isEmpty) {
+      imagePath = null;
+    }
+    if (description == null || description!.isEmpty) {
+      imagePath = null;
+    }
   }
 
   Map<String, dynamic> toJSON() {
@@ -45,6 +67,8 @@ class BookStore {
       BooksTable.lastRead: lastRead?.millisecondsSinceEpoch,
       BooksTable.serverId: serverId,
       BooksTable.serverUrl: serverUrl,
+      BooksTable.imagePath: imagePath,
+      BooksTable.description: description,
     };
   }
 
@@ -72,6 +96,10 @@ class BookStore {
       serverUrl: map[BooksTable.serverUrl] != null
           ? map[BooksTable.serverUrl] as String
           : null,
+      rating: map[BooksTable.rating] as int,
+      review: map[BooksTable.review] as String,
+      imagePath: map[BooksTable.imagePath],
+      description: map[BooksTable.description],
     );
     bookStore._id = map["id"] as int;
     return bookStore;

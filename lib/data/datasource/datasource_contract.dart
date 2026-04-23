@@ -15,4 +15,7 @@ abstract class IDataSource {
   });
   Future<BookStore?> searchBookByServerId(int serverId);
   Future<BookStore?> searchBookById(int id);
+  Future<void> setImagePath(int id, String path);
+  Future<void> setImageUrl(int id, String imageUrl);
+  Future<void> setRatingandReview(int id, int? rating, String? review);
 }

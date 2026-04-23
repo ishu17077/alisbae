@@ -26,7 +26,7 @@ class LocalDatabaseFactory {
     _database = await openDatabase(
       dbPath,
       onCreate: _populateDb,
-      version: 2,
+      version: 3,
       onUpgrade: _upgradeDb,
     );
     return _database!;
@@ -38,13 +38,31 @@ class LocalDatabaseFactory {
   }
 
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion == 1 && newVersion == 2) {
+    if (oldVersion == 1 && newVersion == 3) {
       await db.transaction((txn) async {
         await txn.execute(
           """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.rating} INTEGER CHECK (${BooksTable.rating} >= 1 AND ${BooksTable.rating} <= 5);""",
         );
         await txn.execute(
           """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.review} TEXT;""",
+        );
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.description} TEXT;""",
+        );
+
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.imagePath} TEXT;""",
+        );
+      });
+    }
+    if (oldVersion == 2 && newVersion == 3) {
+      await db.transaction((txn) async {
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.description} TEXT;""",
+        );
+
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.imagePath} TEXT;""",
         );
       });
     }
@@ -65,6 +83,8 @@ class LocalDatabaseFactory {
     ${BooksTable.serverUrl} TEXT,
     ${BooksTable.lastRead} TIMESTAMP,
     ${BooksTable.rating} INTEGER CHECK (${BooksTable.rating} >= 1 AND ${BooksTable.rating} <= 5),
+    ${BooksTable.description} TEXT,
+    ${BooksTable.imagePath} TEXT,
     ${BooksTable.review} TEXT,
     )""")
         .then((_) {

@@ -4,6 +4,7 @@ import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/data/factory/local_database_factory.dart';
 import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
+import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
@@ -12,7 +13,7 @@ import 'package:alisbae/ui/page/book_details/book_details_page.dart';
 import 'package:alisbae/ui/page/book_viewer/book_viewer.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:alisbae/ui/page/home/homepage.dart';
-import 'package:alisbae/ocean_of_pdfs/data_crawler.dart';
+import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/viewmodel/book/book_view_mode.dart';
 import 'package:flutter/material.dart';
@@ -30,13 +31,16 @@ class CompositionRoot {
   static late final DownloadBooksBloc _downloadBooksBloc;
   static late final BookBloc _bookBloc;
   static late final BookDetailsCubit _bookDetailsCubit;
+  static late final ImageSaver _imageSaver;
   static Future<void> configure() async {
     _dir = await getApplicationDocumentsDirectory();
+    final _imageDir = await getApplicationCacheDirectory();
     _dataCrawler = DataCrawler(_dir);
     LocalDatabaseFactory localDatabaseFactory = LocalDatabaseFactory();
     final db = await localDatabaseFactory.getDatabase();
     _dataSource = SqfliteDatasourceImpl(db);
-    _bookViewModel = BookViewModel(_dataSource, _dataCrawler);
+    _imageSaver = ImageSaver(_imageDir);
+    _bookViewModel = BookViewModel(_dataSource, _dataCrawler, _imageSaver);
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,
       showBookViewerUi: showBookViewerUi,

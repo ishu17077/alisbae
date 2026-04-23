@@ -1,16 +1,21 @@
+import 'dart:isolate';
+
 import 'package:alisbae/data/datasource/datasource_contract.dart';
+import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
-import 'package:alisbae/ocean_of_pdfs/data_crawler.dart';
+import 'package:alisbae/service/image_saver/image_saver.dart';
+import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class BookViewModel {
   final IDataSource dataSource;
   final DataCrawler _dataCrawler;
+  final ImageSaver _imageSaver;
 
   List<BookStore> books = [];
-  BookViewModel(this.dataSource, this._dataCrawler);
+  BookViewModel(this.dataSource, this._dataCrawler, this._imageSaver);
 
   Future<BookStore?> downloadBook({
     required BookDetails bookDetails,
@@ -33,6 +38,14 @@ class BookViewModel {
       if (filePath == null || filePath.isEmpty) {
         return null;
       }
+      String? imagePath;
+      if (bookDetails.imageLink.isNotEmpty) {
+        imagePath = await _imageSaver.saveImage(
+          bookDetails.imageLink,
+          bookSearchResult.bookTitle,
+        );
+      }
+      _imageSaver.saveImage(bookDetails.imageLink, bookSearchResult.bookTitle);
       final book = BookStore(
         name: bookSearchResult.bookTitle,
         author: bookSearchResult.author,
@@ -44,6 +57,10 @@ class BookViewModel {
         lastRead: null,
         serverId: bookSearchResult.id,
         serverUrl: bookSearchResult.postLink,
+        description: bookDetails.description,
+        rating: null,
+        review: null,
+        imagePath: imagePath,
       );
       final id = await dataSource.addBook(book);
       final bookReturn = BookStore.fromJSON({...book.toJSON(), "id": id});
@@ -80,6 +97,7 @@ class BookViewModel {
       return books;
     }
     books = await dataSource.getDownloadedBooks();
+    updateImageIfUrlPresent();
     return books;
   }
 
@@ -92,7 +110,7 @@ class BookViewModel {
     await dataSource.deleteBook(book.id!);
     await _dataCrawler.deleteDownload(book.bookPath);
   }
-
+  
   Future<void> updateLastRead({
     required int id,
     required int currentRead,
@@ -113,5 +131,36 @@ class BookViewModel {
     book.isFavorite = isLiked;
 
     await dataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
+  }
+
+  Future<void> updateRatingandReview({
+    required int id,
+    int? rating,
+    String? review,
+  }) async {
+    final book = books.firstWhere((book) => book.id == id);
+    if (rating != null) {
+      book.rating = rating;
+    }
+    if (review != null || review!.isNotEmpty) {
+      book.review = review;
+    }
+
+    await dataSource.setRatingandReview(id, rating, review);
+  }
+
+  Future<void> updateImageIfUrlPresent() async {
+    final booksWithoutImages = await Isolate.run(() {
+      final booksWithoutImages = books.where(
+        (book) =>
+            book.imagePath == null &&
+            (book.imageUrl != null || book.imageUrl!.isNotEmpty),
+      );
+      return booksWithoutImages;
+    });
+    for (BookStore book in booksWithoutImages) {
+      final imagePath = await _imageSaver.saveImage(book.imageUrl!, book.name);
+      dataSource.setImagePath(book.id!, imagePath);
+    }
   }
 }

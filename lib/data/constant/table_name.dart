@@ -6,6 +6,7 @@ final class BooksTable {
   static const String currentRead = "current_read";
   static const String addedOn = "added_on";
   static const String imageUrl = "image_url";
+  static const String imagePath = "image_path";
   static const String lastRead = "last_read";
   static const String bookPath = "book_path";
   static const String serverId = "server_id";
@@ -13,4 +14,5 @@ final class BooksTable {
   static const String rating = "rating";
   static const String review = "review";
   static const String isFavorite = "is_favorite";
+  static const String description = "description";
 }
