@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
@@ -19,7 +20,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController searchController = TextEditingController();
-  final GlobalKey<AnimatedGridState> _gridKey = GlobalKey<AnimatedGridState>();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
   final Set<String> _warmedImageUrls = <String>{};
@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage>
           slivers: [
             SliverToBoxAdapter(child: _buildTextField()),
             _buildSliverSearchResults(),
+            SliverToBoxAdapter(child: SizedBox(height: 20)),
             BlocConsumer<BookDownloadsCubit, List<BookStore>>(
               listener: (context, bookStores) {
                 if (bookStores.isNotEmpty) {
@@ -53,24 +54,22 @@ class _HomePageState extends State<HomePage>
                   );
                 }
               },
-              builder: (context, bookStores) {
-                if (bookStores.isEmpty) {
-                  return SizedBox();
+              builder: (context, downloadedBooks) {
+                if (downloadedBooks.isEmpty) {
+                  return SliverToBoxAdapter(child: SizedBox());
                 }
-                return SliverAnimatedGrid(
-                  key: _gridKey,
-                  initialItemCount: bookStores.length,
+                return SliverGrid.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                   ),
-                  itemBuilder: (context, index, animation) {
-                    BookStore bookStore = bookStores[index];
-
-                    return ScaleTransition(
-                      scale: animation,
-                      child: _buildBookCard(context, bookStore, index),
+                  itemCount: downloadedBooks.length,
+                  itemBuilder: (context, index) {
+                    return _buildBookCard(
+                      context,
+                      downloadedBooks[index],
+                      index,
                     );
                   },
                 );
@@ -113,7 +112,17 @@ class _HomePageState extends State<HomePage>
     bool isLiked = bookStore.isFavorite;
     return InkWell(
       onTap: () {
-        widget._router.onShowBookViewerUi(context, bookStore);
+        widget._router.onShowBookDetailsUi(
+          context,
+          BookSearchResult(
+            postImage: bookStore.imageUrl ?? '',
+            id: bookStore.serverId ?? 1,
+            postTitle: bookStore.name,
+            postLink: bookStore.serverUrl ?? '',
+            bookTitle: bookStore.name,
+            author: bookStore.author,
+          ),
+        );
       },
       child: Card(
         elevation: 5.0,
@@ -121,8 +130,8 @@ class _HomePageState extends State<HomePage>
         child: Padding(
           padding: const EdgeInsets.only(
             top: 0.0,
-            left: 2.0,
-            right: 2.0,
+            left: 5.0,
+            right: 5.0,
             bottom: 10.0,
           ),
           child: Column(
@@ -135,17 +144,7 @@ class _HomePageState extends State<HomePage>
                 children: [
                   IconButton(
                     onPressed: () async {
-                      _gridKey.currentState!.removeItem(
-                        index,
-                        (context, animation) => SizeTransition(
-                          sizeFactor: animation,
-                          child: ScaleTransition(
-                            scale: animation,
-                            child: _buildBookCard(context, bookStore, index),
-                          ),
-                        ),
-                      );
-                      _bookDownloadsCubit.bookViewModel.deleteBook(
+                      await _bookDownloadsCubit.bookViewModel.deleteBook(
                         bookStore.id!,
                       );
                       _bookDownloadsCubit.getBooks();
@@ -174,13 +173,14 @@ class _HomePageState extends State<HomePage>
                   ),
                 ],
               ),
-              bookStore.imageUrl != null
+              bookStore.imagePath != null && bookStore.imagePath!.isNotEmpty
                   ? Flexible(
                       flex: 2,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: _networkCover(
-                          url: bookStore.imageUrl!,
+                        child: _imageCover(
+                          url: null,
+                          path: bookStore.imagePath,
                           height: null,
                           width: 160,
                         ),
@@ -230,30 +230,34 @@ class _HomePageState extends State<HomePage>
   @override
   bool get wantKeepAlive => true;
 
-  void _warmUpImages(Iterable<String> urls) {
-    for (final rawUrl in urls) {
-      final String url = rawUrl.trim();
-      if (url.isEmpty || _warmedImageUrls.contains(url)) {
+  void _warmUpImages(Iterable<String> pathOrUrls, {bool onDevice = false}) {
+    for (var pathOrUrl in pathOrUrls) {
+      final String pathUrl = pathOrUrl.trim();
+      if (pathUrl.isEmpty || _warmedImageUrls.contains(pathUrl)) {
         continue;
       }
-      _warmedImageUrls.add(url);
-      unawaited(precacheImage(NetworkImage(url), context));
+      _warmedImageUrls.add(pathUrl);
+      unawaited(
+        precacheImage(
+          onDevice ? FileImage(File(pathUrl)) : NetworkImage(pathUrl),
+          context,
+        ),
+      );
     }
   }
 
-  Widget _networkCover({
-    required String url,
+  Widget _imageCover({
+    required String? url,
+    required String? path,
     required double width,
     required double? height,
     BoxFit fit = BoxFit.fitHeight,
   }) {
-    final double dpr = MediaQuery.devicePixelRatioOf(context);
-    return Image.network(
-      url,
+    return Image(
+      image: path != null ? FileImage(File(path)) : NetworkImage(url!),
       width: width,
       height: height,
       fit: fit,
-      cacheWidth: (width * dpr).round(),
       // cacheHeight: (height ?? 180 * dpr).round(),
       filterQuality: FilterQuality.low,
       gaplessPlayback: true,
@@ -291,49 +295,54 @@ class _HomePageState extends State<HomePage>
         }
       },
       builder: (context, searchResults) {
-        return searchController.text.trim() == ""
-            ? SliverToBoxAdapter(child: SizedBox())
-            : isLoading
-            ? SliverToBoxAdapter(
-                child: Center(child: CircularProgressIndicator()),
-              )
-            : searchResults.isNotEmpty
-            ? SliverList.builder(
-                itemBuilder: (context, index) {
-                  var searchResult = searchResults[index];
-                  return ListTile(
-                    onTap: () async {
-                      widget._router.onShowBookDetailsUi(context, searchResult);
-                    },
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: _networkCover(
-                        url: searchResult.postImage,
-                        width: 52,
-                        height: 52,
-                      ),
-                    ),
-                    title: Text(
-                      searchResult.bookTitle,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    subtitle: Text(
-                      searchResult.author,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    trailing: SizedBox(
-                      width: 30,
-                      child: Text(
-                        searchResult.postTitle,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  );
-                },
+        if (searchController.text.trim() == "") {
+          return SliverToBoxAdapter(child: SizedBox());
+        }
 
-                itemCount: searchResults.length,
-              )
-            : SliverToBoxAdapter(child: Text("Do search, please ;)"));
+        if (isLoading) {
+          return SliverToBoxAdapter(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (searchResults.isNotEmpty) {
+          return SliverList.builder(
+            itemBuilder: (context, index) {
+              var searchResult = searchResults[index];
+              return ListTile(
+                onTap: () async {
+                  widget._router.onShowBookDetailsUi(context, searchResult);
+                },
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: _imageCover(
+                    url: searchResult.postImage,
+                    path: null,
+                    width: 52,
+                    height: 52,
+                  ),
+                ),
+                title: Text(
+                  searchResult.bookTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                subtitle: Text(
+                  searchResult.author,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                trailing: SizedBox(
+                  width: 30,
+                  child: Text(
+                    searchResult.postTitle,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              );
+            },
+
+            itemCount: searchResults.length,
+          );
+        }
+        return SliverToBoxAdapter(child: Text("Do search, please ;)"));
       },
     );
   }

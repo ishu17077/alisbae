@@ -1,7 +1,7 @@
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:alisbae/data/datasource/datasource_contract.dart';
-import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
@@ -97,20 +97,27 @@ class BookViewModel {
       return books;
     }
     books = await dataSource.getDownloadedBooks();
-    updateImageIfUrlPresent();
+    updateImageAndDscIfUrlPresent();
     return books;
   }
 
   Future<void> deleteBook(int id) async {
-    books.removeWhere((book) => book.id == id);
     final book = await dataSource.searchBookById(id);
     if (book == null) {
       return;
     }
     await dataSource.deleteBook(book.id!);
     await _dataCrawler.deleteDownload(book.bookPath);
+    if (book.imagePath != null && book.imagePath!.isNotEmpty) {
+      final imageFile = File(book.imagePath!);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+      }
+    }
+
+    books.removeWhere((cachedBook) => cachedBook.id == id);
   }
-  
+
   Future<void> updateLastRead({
     required int id,
     required int currentRead,
@@ -149,18 +156,37 @@ class BookViewModel {
     await dataSource.setRatingandReview(id, rating, review);
   }
 
-  Future<void> updateImageIfUrlPresent() async {
-    final booksWithoutImages = await Isolate.run(() {
-      final booksWithoutImages = books.where(
-        (book) =>
-            book.imagePath == null &&
-            (book.imageUrl != null || book.imageUrl!.isNotEmpty),
-      );
-      return booksWithoutImages;
-    });
-    for (BookStore book in booksWithoutImages) {
-      final imagePath = await _imageSaver.saveImage(book.imageUrl!, book.name);
-      dataSource.setImagePath(book.id!, imagePath);
+  static List<BookStore> _filterBooks(List<BookStore> books) {
+    return books
+        .where(
+          (book) =>
+              (book.imagePath == null &&
+                  (book.imageUrl != null && book.imageUrl!.isNotEmpty)) ||
+              book.description == null,
+        )
+        .toList();
+  }
+
+  Future<void> updateImageAndDscIfUrlPresent() async {
+    final books = this.books;
+    final List<BookStore> booksWithoutImagesOrDsc = await Isolate.run(
+      () => _filterBooks(books),
+    );
+    for (var book in booksWithoutImagesOrDsc) {
+      if (book.imagePath == null || book.imagePath!.isEmpty) {
+        final imageLocation = await _imageSaver.saveImage(
+          book.imageUrl!,
+          book.name,
+        );
+        await dataSource.setImagePath(book.id!, imageLocation);
+      }
+      if ((book.description == null || book.description!.isEmpty) &&
+          book.serverUrl != null) {
+        final bookDetails = BookDetails.fromJSON(
+          await _dataCrawler.getBookInfo(bookUrl: book.serverUrl!),
+        );
+        await dataSource.setDescription(book.id!, bookDetails.description);
+      }
     }
   }
 }

@@ -96,8 +96,8 @@ class BookStore {
       serverUrl: map[BooksTable.serverUrl] != null
           ? map[BooksTable.serverUrl] as String
           : null,
-      rating: map[BooksTable.rating] as int,
-      review: map[BooksTable.review] as String,
+      rating: map[BooksTable.rating] as int?,
+      review: map[BooksTable.review] as String?,
       imagePath: map[BooksTable.imagePath],
       description: map[BooksTable.description],
     );

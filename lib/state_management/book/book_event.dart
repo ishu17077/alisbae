@@ -10,8 +10,11 @@ sealed class BookEvent extends Equatable {
     int bookStoreId, {
     required DateTime lastRead,
     required int currentRead,
-  }) =>
-      BookUpdateLastRead(bookStoreId, currentRead: currentRead, lastRead: lastRead);
+  }) => BookUpdateLastRead(
+    bookStoreId,
+    currentRead: currentRead,
+    lastRead: lastRead,
+  );
 
   @override
   List<Object?> get props => [];
@@ -45,4 +48,19 @@ final class BookUpdateLastRead extends BookEvent {
   @override
   // TODO: implement props
   List<Object?> get props => [bookStoreId];
+}
+
+final class BookUpdateRatingandReview extends BookEvent {
+  final int bookStoreId;
+  final int rating;
+  final String? review;
+
+  const BookUpdateRatingandReview(
+    this.bookStoreId, {
+    required this.rating,
+    this.review,
+  });
+
+  @override
+  List<Object?> get props => [bookStoreId, rating, review];
 }

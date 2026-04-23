@@ -34,7 +34,7 @@ class CompositionRoot {
   static late final ImageSaver _imageSaver;
   static Future<void> configure() async {
     _dir = await getApplicationDocumentsDirectory();
-    final _imageDir = await getApplicationCacheDirectory();
+    final _imageDir = await getApplicationDocumentsDirectory();
     _dataCrawler = DataCrawler(_dir);
     LocalDatabaseFactory localDatabaseFactory = LocalDatabaseFactory();
     final db = await localDatabaseFactory.getDatabase();
@@ -74,7 +74,10 @@ class CompositionRoot {
           create: (context) => BookBloc(_bookViewModel, _bookDownloadsCubit),
         ),
       ],
-      child: BookDetailsPage(bookSearchResult: searchResult),
+      child: BookDetailsPage(
+        bookSearchResult: searchResult,
+        router: _homeRouter,
+      ),
     );
   }
 

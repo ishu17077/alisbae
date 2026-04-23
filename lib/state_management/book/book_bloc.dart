@@ -55,5 +55,18 @@ class BookBloc extends Bloc<BookEvent, BookState> {
         emit(BookUpdateFailed());
       }
     });
+    on<BookUpdateRatingandReview>((event, emit) async {
+      try {
+        await bookViewModel.updateRatingandReview(
+          id: event.bookStoreId,
+          rating: event.rating,
+          review: event.review,
+        );
+        await bookDownloadsCubit.getBooks();
+        emit(BookRatingandReviewUpdateSuccess());
+      } catch (e) {
+        emit(BookUpdateFailed());
+      }
+    });
   }
 }

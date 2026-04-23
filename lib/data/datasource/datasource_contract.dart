@@ -18,4 +18,5 @@ abstract class IDataSource {
   Future<void> setImagePath(int id, String path);
   Future<void> setImageUrl(int id, String imageUrl);
   Future<void> setRatingandReview(int id, int? rating, String? review);
+  Future<void> setDescription(int id, String description);
 }

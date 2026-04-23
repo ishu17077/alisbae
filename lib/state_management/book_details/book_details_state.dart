@@ -8,13 +8,23 @@ sealed class BookDetailsState extends Equatable {
 
 final class BookDetailsInitial extends BookDetailsState {}
 
-final class BookFound extends BookDetailsState {
-  final BookStore? bookStore;
-  final BookDetails bookDetails;
+final class BookFoundLocally extends BookDetailsState {
+  final BookStore bookStore;
 
-  const BookFound(this.bookDetails, this.bookStore);
+  const BookFoundLocally(this.bookStore);
   @override
-  List<Object?> get props => [bookStore, bookDetails];
+  // TODO: implement props
+  List<Object?> get props => [bookStore];
 }
 
-final class BookFoundError extends BookDetailsState {}
+final class BookFoundOnline extends BookDetailsState {
+  final BookDetails bookDetails;
+
+  const BookFoundOnline(this.bookDetails);
+  @override
+  List<Object?> get props => [bookDetails];
+}
+
+final class BookFoundError extends BookDetailsState {
+  const BookFoundError();
+}

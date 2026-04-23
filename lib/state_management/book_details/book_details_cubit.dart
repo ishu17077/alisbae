@@ -11,25 +11,26 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
   BookDetailsCubit(this._bookViewModel) : super(BookDetailsInitial());
 
   Future<void> bookInfo({required String bookUrl}) async {
+    final book = _bookViewModel.books.firstWhere(
+      (book) {
+        if (book.serverUrl == null || book.serverUrl!.isEmpty) {
+          return false;
+        }
+        return book.serverUrl!.replaceAll(RegExp(r'/$'), '') ==
+            bookUrl.replaceAll(RegExp(r'/$'), '');
+      },
+      orElse: () =>
+          BookStore(name: "", author: "", bookPath: "", imageUrl: null),
+    );
     try {
-      final bookDetails = await _bookViewModel.getBookDetailsOnline(bookUrl);
-      final book = _bookViewModel.books.firstWhere(
-        (book) {
-          if (book.serverUrl == null || book.serverUrl!.isEmpty) {
-            return false;
-          }
-          return book.serverUrl!.replaceAll(RegExp(r'/$'), '') ==
-              bookDetails.bookUrl.replaceAll(RegExp(r'/$'), '');
-        },
-        orElse: () =>
-            BookStore(name: "", author: "", bookPath: "", imageUrl: null),
-      );
-
-      if (book.name.isEmpty && book.author.isEmpty && book.bookPath.isEmpty) {
-        emit(BookFound(bookDetails, book));
+      if (book.name.isNotEmpty &&
+          book.author.isNotEmpty &&
+          book.bookPath.isNotEmpty) {
+        emit(BookFoundLocally(book));
         return;
       }
-      emit(BookFound(bookDetails, null));
+      final bookDetails = await _bookViewModel.getBookDetailsOnline(bookUrl);
+      emit(BookFoundOnline(bookDetails));
     } catch (e) {
       emit(BookFoundError());
     }

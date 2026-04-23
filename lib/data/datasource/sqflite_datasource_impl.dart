@@ -135,4 +135,14 @@ class SqfliteDatasourceImpl implements IDataSource {
       whereArgs: [id],
     );
   }
+
+  @override
+  Future<void> setDescription(int id, String description) async {
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.description: description},
+      where: "${BooksTable.id} = ?",
+      whereArgs: [id],
+    );
+  }
 }

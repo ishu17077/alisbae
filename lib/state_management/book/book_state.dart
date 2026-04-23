@@ -14,3 +14,5 @@ final class BookDislikeSuccess extends BookState {}
 final class BookLastReadUpdateSuccess extends BookState {}
 
 final class BookUpdateFailed extends BookState {}
+
+final class BookRatingandReviewUpdateSuccess extends BookState {}
