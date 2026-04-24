@@ -1,4 +1,4 @@
-# The Alishba 📚
+# The Alisbae 📚
 
 A Flutter-based mobile book reader that lets you search, download, and read PDF books from [OceanOfPDFs](https://oceanofpdf.com) — all stored locally on your device.
 
