@@ -103,20 +103,20 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          BlocBuilder<BookDetailsCubit, BookDetailsState>(
-            builder: (context, bookDetailsState) {
-              if (bookDetailsState is BookDetailsInitial) {
-                return Center(child: CircularProgressIndicator());
-              } else if (bookDetailsState is BookFoundError) {
-                return Center(
-                  child: Text("The book cannot be found for some reason"),
-                );
-              } else if (bookDetailsState is BookFoundOnline) {
-                return SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: Padding(
+      body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            BlocBuilder<BookDetailsCubit, BookDetailsState>(
+              builder: (context, bookDetailsState) {
+                if (bookDetailsState is BookDetailsInitial) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (bookDetailsState is BookFoundError) {
+                  return Center(
+                    child: Text("The book cannot be found for some reason"),
+                  );
+                } else if (bookDetailsState is BookFoundOnline) {
+                  return Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: 10,
                       horizontal: 20,
@@ -131,12 +131,9 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                       language: bookDetailsState.bookDetails.language,
                       onlineFileName: bookDetailsState.bookDetails.fileName,
                     ),
-                  ),
-                );
-              } else if (bookDetailsState is BookFoundLocally) {
-                return SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: Padding(
+                  );
+                } else if (bookDetailsState is BookFoundLocally) {
+                  return Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: 10,
                       horizontal: 20,
@@ -152,16 +149,17 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                       language: null,
                       onlineFileName: null,
                     ),
-                  ),
-                );
-              } else {
-                return Center(
-                  child: Text("Error while fetching for book item."),
-                );
-              }
-            },
-          ),
-        ],
+                  );
+                } else {
+                  return Center(
+                    child: Text("Error while fetching for book item."),
+                  );
+                }
+              },
+            ),
+            SizedBox(height: 100),
+          ],
+        ),
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -218,6 +216,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
           _downloadBooksBloc.add(
             DownloadBookEvent.initial(widget.bookSearchResult),
           );
+          _bookDetailsCubit.bookInfo(bookUrl: widget.bookSearchResult.postLink);
 
           return FloatingActionButton(
             onPressed: () {},
@@ -229,6 +228,9 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
           return FloatingActionButton(
             onPressed: () {
               _downloadBooksBloc.add(DownloadBookDelete(state.bookStore.id!));
+              _bookDetailsCubit.bookInfo(
+                bookUrl: widget.bookSearchResult.postLink,
+              );
             },
             child: Icon(Icons.remove_shopping_cart),
           );
@@ -319,7 +321,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     );
   }
 
-  Column _buildBookDetailsPage({
+  Widget _buildBookDetailsPage({
     required String title,
     required String author,
     required String description,
@@ -387,6 +389,12 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                       return AlertDialog(
                         actions: [
                           TextButton(
+                            child: Text("Cancel"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          TextButton(
                             child: Text("OK"),
                             onPressed: () {
                               review = textEdittingController.text;
@@ -397,19 +405,17 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                               Navigator.pop(context);
                             },
                           ),
-                          TextButton(
-                            child: Text("Cancel"),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
                         ],
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text("Write your review?"),
                             SizedBox(height: 10),
-                            TextField(controller: textEdittingController),
+                            TextField(
+                              controller: textEdittingController,
+                              maxLines: 5,
+                              minLines: 5,
+                            ),
                           ],
                         ),
                       );
@@ -444,7 +450,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                 "Review: $review",
                 style: Theme.of(context).textTheme.bodySmall,
                 softWrap: true,
-                maxLines: 6,
+                maxLines: 10,
               )
             : SizedBox(),
         const SizedBox(height: 16),
