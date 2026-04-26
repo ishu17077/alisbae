@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';

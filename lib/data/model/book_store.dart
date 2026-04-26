@@ -2,8 +2,8 @@
 import 'package:alisbae/data/constant/table_name.dart';
 
 class BookStore {
-  int? _id;
-  int? get id => _id;
+  late int _id;
+  int get id => _id;
   String name;
   String author;
   String bookPath;
@@ -15,6 +15,7 @@ class BookStore {
   String? imageUrl;
   String? serverUrl;
   int? rating;
+  int? folderId;
   String? review;
   String? imagePath;
   String? description;
@@ -29,6 +30,7 @@ class BookStore {
     this.lastRead,
     this.serverId,
     this.serverUrl,
+    this.folderId,
     DateTime? addedOn,
     this.rating,
     this.review,
@@ -69,6 +71,7 @@ class BookStore {
       BooksTable.serverUrl: serverUrl,
       BooksTable.imagePath: imagePath,
       BooksTable.description: description,
+      BooksTable.folderId: folderId,
     };
   }
 
@@ -99,6 +102,7 @@ class BookStore {
       rating: map[BooksTable.rating] as int?,
       review: map[BooksTable.review] as String?,
       imagePath: map[BooksTable.imagePath],
+      folderId: map[BooksTable.folderId] as int?,
       description: map[BooksTable.description],
     );
     bookStore._id = map["id"] as int;

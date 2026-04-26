@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'package:alisbae/data/datasource/datasource_contract.dart';
+import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
+import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_contract.dart';
+import 'package:alisbae/data/datasource/folder_datasource/sqflite_folder_datasource_impl.dart';
 import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/data/factory/local_database_factory.dart';
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
@@ -23,7 +25,8 @@ import 'package:path_provider/path_provider.dart';
 class CompositionRoot {
   static late final DataCrawler _dataCrawler;
   static late final BookViewModel _bookViewModel;
-  static late final IDataSource _dataSource;
+  static late final IBookDataSource _bookDataSource;
+  static late final IFolderDatasource _folderDatasource;
   static late final IHomeRouter _homeRouter;
   static late final Directory _dir;
   static late final BookSearchCubit _bookSearchCubit;
@@ -38,9 +41,15 @@ class CompositionRoot {
     _dataCrawler = DataCrawler(_dir);
     LocalDatabaseFactory localDatabaseFactory = LocalDatabaseFactory();
     final db = await localDatabaseFactory.getDatabase();
-    _dataSource = SqfliteDatasourceImpl(db);
+    _bookDataSource = SqfliteBookDatasourceImpl(db);
+    _folderDatasource = SqfliteFolderDatasourceImpl(db);
     _imageSaver = ImageSaver(_imageDir);
-    _bookViewModel = BookViewModel(_dataSource, _dataCrawler, _imageSaver);
+    _bookViewModel = BookViewModel(
+      _bookDataSource,
+      _folderDatasource,
+      _dataCrawler,
+      _imageSaver,
+    );
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,
       showBookViewerUi: showBookViewerUi,

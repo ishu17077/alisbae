@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:alisbae/model/book_details.dart';
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';

@@ -1,4 +1,4 @@
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:flutter/material.dart';

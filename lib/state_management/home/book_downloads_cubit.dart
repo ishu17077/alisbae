@@ -1,4 +1,4 @@
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/viewmodel/book/book_view_mode.dart';
 import 'package:bloc/bloc.dart';
 

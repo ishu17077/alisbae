@@ -1,21 +1,28 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:alisbae/data/datasource/datasource_contract.dart';
+import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
+import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_contract.dart';
 import 'package:alisbae/model/book_details.dart';
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class BookViewModel {
-  final IDataSource dataSource;
+  final IBookDataSource bookDataSource;
+  final IFolderDatasource folderDatasource;
   final DataCrawler _dataCrawler;
   final ImageSaver _imageSaver;
 
   List<BookStore> books = [];
-  BookViewModel(this.dataSource, this._dataCrawler, this._imageSaver);
+  BookViewModel(
+    this.bookDataSource,
+    this.folderDatasource,
+    this._dataCrawler,
+    this._imageSaver,
+  );
 
   Future<BookStore?> downloadBook({
     required BookDetails bookDetails,
@@ -23,7 +30,7 @@ class BookViewModel {
     Function(int count, int total)? callback,
   }) async {
     try {
-      final bookPresent = await dataSource.searchBookByServerId(
+      final bookPresent = await bookDataSource.searchBookByServerId(
         bookSearchResult.id,
       );
       if (bookPresent != null) {
@@ -62,7 +69,7 @@ class BookViewModel {
         review: null,
         imagePath: imagePath,
       );
-      final id = await dataSource.addBook(book);
+      final id = await bookDataSource.addBook(book);
       final bookReturn = BookStore.fromJSON({...book.toJSON(), "id": id});
       books.add(bookReturn);
       return bookReturn;
@@ -96,17 +103,17 @@ class BookViewModel {
     if (!forceRefresh && books.isNotEmpty) {
       return books;
     }
-    books = await dataSource.getDownloadedBooks();
+    books = await bookDataSource.getDownloadedBooks();
     updateImageAndDscIfUrlPresent();
     return books;
   }
 
   Future<void> deleteBook(int id) async {
-    final book = await dataSource.searchBookById(id);
+    final book = await bookDataSource.searchBookById(id);
     if (book == null) {
       return;
     }
-    await dataSource.deleteBook(book.id!);
+    await bookDataSource.deleteBook(book.id!);
     await _dataCrawler.deleteDownload(book.bookPath);
     if (book.imagePath != null && book.imagePath!.isNotEmpty) {
       final imageFile = File(book.imagePath!);
@@ -127,7 +134,7 @@ class BookViewModel {
     book.currentRead = currentRead;
     book.lastRead = lastRead;
 
-    await dataSource.updateLastRead(id: id, currentRead: currentRead);
+    await bookDataSource.updateLastRead(id: id, currentRead: currentRead);
   }
 
   Future<void> updateLikeStatus({
@@ -137,7 +144,7 @@ class BookViewModel {
     final book = books.firstWhere((book) => book.id == id);
     book.isFavorite = isLiked;
 
-    await dataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
+    await bookDataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
   }
 
   Future<void> updateRatingandReview({
@@ -153,7 +160,7 @@ class BookViewModel {
       book.review = review;
     }
 
-    await dataSource.setRatingandReview(id, rating, review);
+    await bookDataSource.setRatingandReview(id, rating, review);
   }
 
   static List<BookStore> _filterBooks(List<BookStore> books) {
@@ -178,14 +185,14 @@ class BookViewModel {
           book.imageUrl!,
           book.name,
         );
-        await dataSource.setImagePath(book.id!, imageLocation);
+        await bookDataSource.setImagePath(book.id!, imageLocation);
       }
       if ((book.description == null || book.description!.isEmpty) &&
           book.serverUrl != null) {
         final bookDetails = BookDetails.fromJSON(
           await _dataCrawler.getBookInfo(bookUrl: book.serverUrl!),
         );
-        await dataSource.setDescription(book.id!, bookDetails.description);
+        await bookDataSource.setDescription(book.id!, bookDetails.description);
       }
     }
   }

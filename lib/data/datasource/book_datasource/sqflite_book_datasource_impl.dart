@@ -1,12 +1,9 @@
-import 'package:alisbae/data/constant/table_name.dart';
-import 'package:alisbae/data/datasource/datasource_contract.dart';
-import 'package:alisbae/model/book_store.dart';
-import 'package:sqflite/sqflite.dart';
+part of '../sqflite_datasource_impl.dart';
 
-class SqfliteDatasourceImpl implements IDataSource {
+class SqfliteBookDatasourceImpl implements IBookDataSource {
   final Database _db;
+  SqfliteBookDatasourceImpl(this._db);
 
-  const SqfliteDatasourceImpl(this._db);
   @override
   Future<int> addBook(BookStore book) async {
     int id = await _db.insert(
@@ -144,5 +141,10 @@ class SqfliteDatasourceImpl implements IDataSource {
       where: "${BooksTable.id} = ?",
       whereArgs: [id],
     );
+  }
+
+  @override
+  Future<void> setFolder({required int? folderId}) async {
+    await _db.update(BooksTable.tableName, {BooksTable.folderId: folderId});
   }
 }

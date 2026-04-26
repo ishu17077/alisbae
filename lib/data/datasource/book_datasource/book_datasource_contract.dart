@@ -1,6 +1,6 @@
-import 'package:alisbae/model/book_store.dart';
+import 'package:alisbae/data/model/book_store.dart';
 
-abstract class IDataSource {
+abstract interface class IBookDataSource {
   Future<int> addBook(BookStore book);
   Future<List<BookStore>> getDownloadedBooks();
   Future<void> deleteBook(int id);
@@ -18,5 +18,6 @@ abstract class IDataSource {
   Future<void> setImagePath(int id, String path);
   Future<void> setImageUrl(int id, String imageUrl);
   Future<void> setRatingandReview(int id, int? rating, String? review);
+  Future<void> setFolder({required int? folderId});
   Future<void> setDescription(int id, String description);
 }
