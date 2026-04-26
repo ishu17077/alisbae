@@ -8,6 +8,7 @@ import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class HomePage extends StatefulWidget {
   final IHomeRouter _router;
@@ -213,6 +214,14 @@ class _HomePageState extends State<HomePage>
                   ).textTheme.bodyLarge?.copyWith(fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              SizedBox(height: 4),
+              RatingBarIndicator(
+                rating: bookStore.rating?.toDouble() ?? 0.0,
+                itemBuilder: (context, index) =>
+                    Icon(Icons.star, color: Colors.amber),
+                itemCount: 5,
+                itemSize: 12,
               ),
             ],
           ),

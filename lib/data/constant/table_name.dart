@@ -14,5 +14,14 @@ final class BooksTable {
   static const String rating = "rating";
   static const String review = "review";
   static const String isFavorite = "is_favorite";
+  static const String folderId = "folder_id";
   static const String description = "description";
+}
+
+final class FoldersTable {
+  static const String tableName = "folders";
+  static const String id = "id";
+  static const String name = "name";
+  static const String color = "color";
+  static const String parentFolderId = "parent_folder_id";
 }

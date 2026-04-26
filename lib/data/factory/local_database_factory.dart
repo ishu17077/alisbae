@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alisbae/data/constant/table_name.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
@@ -26,14 +28,16 @@ class LocalDatabaseFactory {
     _database = await openDatabase(
       dbPath,
       onCreate: _populateDb,
-      version: 3,
+      version: 4,
       onUpgrade: _upgradeDb,
+      onConfigure: _configureDb,
     );
     return _database!;
   }
 
   Future<void> _populateDb(Database db, int version) async {
     await _createBooksTable(db);
+    await _createFoldersTable(db);
     await _createIndices(db);
   }
 
@@ -59,13 +63,29 @@ class LocalDatabaseFactory {
         );
       });
     }
+    if (oldVersion < 4) {
+      await _createFoldersTable(db);
+      await db.transaction((txn) async {
+        await txn.execute(
+          """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.folderId} INTEGER 
+          REFERENCES ${FoldersTable.tableName}(${FoldersTable.id})""",
+        );
+        await txn.execute(
+          "CREATE UNIQUE INDEX uidx_books_folder ON (${BooksTable.bookName}, IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+        );
+        
+        await txn.execute(
+          "CREATE UNIQUIE uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1),${FoldersTable.name})",
+        );
+      });
+    }
   }
 
   Future<void> _createBooksTable(Database db) async {
     await db
         .execute("""CREATE TABLE ${BooksTable.tableName}(
     ${BooksTable.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    ${BooksTable.bookName} VARCHAR(255) NOT NULL,
+    ${BooksTable.bookName} VARCHAR(255) NOT NULL CHECK(${BooksTable.bookName} <> ''),
     ${BooksTable.author} VARCHAR(255) NOT NULL,
     ${BooksTable.bookPath} TEXT NOT NULL,
     ${BooksTable.currentRead} INTEGER DEFAULT 1 NOT NULL,
@@ -78,7 +98,11 @@ class LocalDatabaseFactory {
     ${BooksTable.rating} INTEGER CHECK (${BooksTable.rating} >= 1 AND ${BooksTable.rating} <= 5),
     ${BooksTable.description} TEXT,
     ${BooksTable.imagePath} TEXT,
-    ${BooksTable.review} TEXT
+    ${BooksTable.review} TEXT,
+    ${BooksTable.folderId} INTEGER,
+    FOREIGN KEY (${BooksTable.folderId}) 
+      REFERENCES ${FoldersTable.tableName}(${FoldersTable.id})
+        ON DELETE CASCADE
     )""")
         .then((_) {
           debugPrint("Successfully created ${BooksTable.tableName} table");
@@ -88,14 +112,50 @@ class LocalDatabaseFactory {
         });
   }
 
+  Future<void> _createFoldersTable(Database db) async {
+    await db
+        .execute("""CREATE TABLE ${FoldersTable.tableName}(
+    ${FoldersTable.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    ${FoldersTable.name} VARCHAR(255) NOT NULL CHECK(${BooksTable.bookName} <> ''),
+    ${FoldersTable.color} VARCHAR(255),
+    ${FoldersTable.parentFolderId} INTEGER,
+    FOREIGN KEY (${FoldersTable.parentFolderId}) 
+      REFERENCES ${FoldersTable.tableName}(${FoldersTable.id}) 
+        ON DELETE CASCADE
+    )""")
+        .then(
+          (_) => debugPrint(
+            "Successfully created ${FoldersTable.tableName} table",
+          ),
+        )
+        .catchError(
+          (e) =>
+              debugPrint("Table ${FoldersTable.tableName} creation failed: $e"),
+        );
+  }
+
   Future<void> _createIndices(Database db) async {
-    final batch = db.batch();
     try {
+      final batch = db.batch();
+      //! Essencial indices to prevent data conflicts
       batch.execute(
         "CREATE UNIQUE INDEX uidx_books ON ${BooksTable.tableName} (${BooksTable.bookName}, ${BooksTable.author})",
       );
+
+      batch.execute(
+        "CREATE UNIQUE INDEX uidx_books_folder ON (${BooksTable.bookName}, IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+      );
+
+      batch.execute(
+        "CREATE UNIQUIE uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1),${FoldersTable.name})",
+      );
+      //TODO: Non essential queries to improve performance
     } catch (e) {
       debugPrint("Indices creation failed $e");
     }
+  }
+
+  Future<void> _configureDb(Database db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
   }
 }
