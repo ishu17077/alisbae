@@ -1,4 +1,8 @@
-part of '../sqflite_datasource_impl.dart';
+
+import 'package:alisbae/data/constant/table_name.dart';
+import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
+import 'package:alisbae/data/model/book_store.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SqfliteBookDatasourceImpl implements IBookDataSource {
   final Database _db;

@@ -1,5 +1,5 @@
 import 'package:alisbae/data/model/book_store.dart';
-import 'package:alisbae/viewmodel/book/book_view_mode.dart';
+import 'package:alisbae/viewmodel/home/home_view_model.dart';
 import 'package:bloc/bloc.dart';
 
 class BookDownloadsCubit extends Cubit<List<BookStore>> {
