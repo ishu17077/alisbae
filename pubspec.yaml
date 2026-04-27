@@ -52,6 +52,8 @@ dependencies:
   syncfusion_flutter_core: ^33.2.3
   flutter_rating_bar: ^4.0.1
   local_auth: ^3.0.1
+  async: ^2.13.1
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

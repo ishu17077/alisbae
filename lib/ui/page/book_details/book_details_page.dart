@@ -1,8 +1,5 @@
 import 'dart:io';
-
-import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/data/model/book_store.dart';
-import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
@@ -218,7 +215,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         if (state is AlreadyDownloaded) {
           return FloatingActionButton(
             onPressed: () {
-              _downloadBooksBloc.add(DownloadBookDelete(state.bookStore.id!));
+              _downloadBooksBloc.add(DownloadBookDelete(state.bookStore.id));
               _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.remove_shopping_cart),
@@ -369,7 +366,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                   });
                   _bookBloc.add(
                     BookUpdateRatingandReview(
-                      bookStore.id!,
+                      bookStore.id,
                       rating: rating.toInt(),
                       review: review == null
                           ? null

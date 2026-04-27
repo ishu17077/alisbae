@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:alisbae/data/model/book_store.dart';
+import 'package:alisbae/data/model/folder_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
+import 'package:alisbae/state_management/home/folder_cubit.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class HomePage extends StatefulWidget {
   final IHomeRouter _router;
-  const HomePage(this._router);
+  const HomePage(this._router, {super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,7 +28,6 @@ class _HomePageState extends State<HomePage>
   bool isLoading = false;
   @override
   void initState() {
-    // TODO: implement initState
     _searchCubit = context.read<BookSearchCubit>();
     _bookDownloadsCubit = context.read<BookDownloadsCubit>();
     _bookDownloadsCubit.getBooks();
@@ -47,6 +47,25 @@ class _HomePageState extends State<HomePage>
             SliverToBoxAdapter(child: _buildTextField()),
             _buildSliverSearchResults(),
             SliverToBoxAdapter(child: SizedBox(height: 20)),
+            BlocBuilder<FolderCubit, List<FolderStore>>(
+              builder: (context, folders) {
+                if (folders.isEmpty) {
+                  return SliverToBoxAdapter(child: SizedBox());
+                }
+
+                return SliverGrid.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                  ),
+                  itemBuilder: (context, index) {
+                    return SliverToBoxAdapter(child: SizedBox());
+                  },
+                );
+              },
+            ),
+
             BlocConsumer<BookDownloadsCubit, List<BookStore>>(
               listener: (context, bookStores) {
                 if (bookStores.isNotEmpty) {
@@ -67,11 +86,7 @@ class _HomePageState extends State<HomePage>
                   ),
                   itemCount: downloadedBooks.length,
                   itemBuilder: (context, index) {
-                    return _buildBookCard(
-                      context,
-                      downloadedBooks[index],
-                      index,
-                    );
+                    return _buildBookCard(downloadedBooks[index], index);
                   },
                 );
               },
@@ -109,7 +124,20 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildBookCard(BuildContext context, BookStore bookStore, int index) {
+  Widget _buildFolderCard(FolderStore folder) {
+    return InkWell(
+      onTap: () {},
+      child: Card(
+        elevation: 10.0,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookCard(BookStore bookStore, int index) {
     bool isLiked = bookStore.isFavorite;
     return InkWell(
       onTap: () {
@@ -140,7 +168,7 @@ class _HomePageState extends State<HomePage>
                   IconButton(
                     onPressed: () async {
                       await _bookDownloadsCubit.homeViewModel.deleteBook(
-                        bookStore.id!,
+                        bookStore.id,
                       );
                       _bookDownloadsCubit.getBooks();
                     },
@@ -152,7 +180,7 @@ class _HomePageState extends State<HomePage>
                         isLiked = !isLiked;
                       });
                       _bookDownloadsCubit.homeViewModel.updateLikeStatus(
-                        id: bookStore.id!,
+                        id: bookStore.id,
                         isLiked: isLiked,
                       );
                     },
@@ -259,8 +287,8 @@ class _HomePageState extends State<HomePage>
   }) {
     final ImageProvider<Object> imageProvider =
         (path != null && path.isNotEmpty)
-            ? FileImage(File(path)) as ImageProvider
-            : NetworkImage(url!);
+        ? FileImage(File(path)) as ImageProvider
+        : NetworkImage(url!);
 
     return Image(
       image: imageProvider,

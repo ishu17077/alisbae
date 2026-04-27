@@ -41,12 +41,12 @@ class SqfliteFolderDatasourceImpl implements IFolderDatasource {
   }
 
   @override
-  Future<List<FolderStore>> listAllFolders({int? folderId}) async {
+  Future<List<FolderStore>> listFolders({int? parentFolderId}) async {
     try {
       final directories = await _db.query(
         FoldersTable.tableName,
-        where: folderId != null ? "${FoldersTable.id} = ?" : null,
-        whereArgs: folderId != null ? [folderId] : null,
+        where: "${FoldersTable.parentFolderId} = ?",
+        whereArgs: [parentFolderId],
       );
       return directories
           .map((directory) => FolderStore.fromJSON(directory))

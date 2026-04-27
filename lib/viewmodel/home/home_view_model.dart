@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
 import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_contract.dart';
 import 'package:alisbae/data/model/book_store.dart';
+import 'package:alisbae/data/model/folder_store.dart';
 import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
@@ -41,7 +42,7 @@ class HomeViewModel {
     if (book == null) {
       return;
     }
-    await _bookDataSource.deleteBook(book.id!);
+    await _bookDataSource.deleteBook(book.id);
     await _dataCrawler.deleteDownload(book.bookPath);
     if (book.imagePath != null && book.imagePath!.isNotEmpty) {
       final imageFile = File(book.imagePath!);
@@ -64,10 +65,18 @@ class HomeViewModel {
     return books;
   }
 
+  Future<List<BookStore>> listFolderBooks({int? folderId}) async {
+    return await _bookDataSource.getFolderBooks(folderId);
+  }
+
+  Future<List<FolderStore>> listFolders({int? parentFolderId}) async {
+    return _folderDatasource.listFolders(parentFolderId: parentFolderId);
+  }
+
   Future<void> updateImageAndDscIfUrlPresent() async {
     final books = this.books;
     final List<BookStore> booksWithoutImagesOrDsc = await Isolate.run(
-      () => _filterBooks(books),
+      () => _filterUnsavedBooks(books),
     );
     for (var book in booksWithoutImagesOrDsc) {
       if (book.imagePath == null || book.imagePath!.isEmpty) {
@@ -75,7 +84,7 @@ class HomeViewModel {
           book.imageUrl!,
           book.name,
         );
-        await _bookDataSource.setImagePath(book.id!, imageLocation);
+        await _bookDataSource.setImagePath(book.id, imageLocation);
       }
       if ((book.description == null || book.description!.isEmpty) &&
           book.serverUrl != null) {
@@ -87,7 +96,7 @@ class HomeViewModel {
     }
   }
 
-  static List<BookStore> _filterBooks(List<BookStore> books) {
+  static List<BookStore> _filterUnsavedBooks(List<BookStore> books) {
     return books
         .where(
           (book) =>

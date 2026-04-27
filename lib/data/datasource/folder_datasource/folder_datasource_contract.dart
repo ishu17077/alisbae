@@ -5,5 +5,5 @@ abstract interface class IFolderDatasource {
 
   Future<void> deleteFolder(int id);
 
-  Future<List<FolderStore>> listAllFolders({int? folderId});
+  Future<List<FolderStore>> listFolders({int? parentFolderId});
 }
