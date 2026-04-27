@@ -13,12 +13,10 @@ class BookViewModel {
     required this.bookSearchResult,
   }) {
     assert(
-      isDownloaded && bookStore != null,
-      "Bookstore cannot  be null if the book is already downloaded",
-    );
-    assert(
-      !isDownloaded && bookSearchResult != null,
-      "BookSearchResult cannot be null, if book is not downloaded",
+      isDownloaded ? bookStore != null : bookSearchResult != null,
+      isDownloaded
+          ? "BookStore is not passed when book is already downloaded is marked"
+          : "Book Search is not passed when book is not downloaded is marked",
     );
     checkBookAlreadyDownloaded();
   }
@@ -102,16 +100,20 @@ class BookViewModel {
     }
   }
 
-  Future<BookDetails> getBookDetailsOnline() async {
+  Future<BookDetails?> getBookDetailsOnline() async {
+    String? bookUrl = bookSearchResult?.postLink ?? bookStore!.serverUrl;
+
     if (bookDetails != null) {
       return bookDetails!;
     }
     bookDetails = BookDetails.fromJSON(
-      await homeViewModel._dataCrawler.getBookInfo(
-        bookUrl: bookSearchResult!.postLink,
-      ),
+      await homeViewModel._dataCrawler.getBookInfo(bookUrl: bookUrl!),
     );
-    return bookDetails!;
+    if (bookDetails != null) {
+      bookDetails!.bookName = bookSearchResult!.bookTitle;
+      bookDetails!.bookAuthor = bookSearchResult!.author;
+    }
+    return bookDetails;
   }
 
   Future<void> updateLastRead({

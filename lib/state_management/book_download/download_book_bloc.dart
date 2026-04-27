@@ -11,12 +11,12 @@ part 'download_book_event.dart';
 part 'download_book_state.dart';
 
 class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
-  final BookViewModel _bookViewModel;
+  final BookViewModel bookViewModel;
   final BookDownloadsCubit _bookDownloadsCubit;
-  DownloadBooksBloc(this._bookViewModel, this._bookDownloadsCubit)
+  DownloadBooksBloc(this.bookViewModel, this._bookDownloadsCubit)
     : super(DownloadBookState.initial()) {
     on<DownloadBookInitial>((event, emit) async {
-      final ifAlreadyPresent = await _bookViewModel.searchBookByServerId();
+      final ifAlreadyPresent = await bookViewModel.searchBookByServerId();
       if (ifAlreadyPresent != null) {
         emit(AlreadyDownloaded(ifAlreadyPresent));
       }
@@ -24,7 +24,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
 
     on<DownloadBookStart>((event, emit) async {
       emit(DownloadBookState.downloading(0, 100));
-      final result = await _bookViewModel.downloadBook(
+      final result = await bookViewModel.downloadBook(
         callback: (count, total) {
           emit(DownloadBookState.downloading(count, total));
         },
@@ -39,7 +39,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
     });
 
     on<DownloadBookDelete>((event, emit) async {
-      await _bookViewModel.homeViewModel.deleteBook(event.id);
+      await bookViewModel.homeViewModel.deleteBook(event.id);
 
       emit(DeleteSuccess());
       await _bookDownloadsCubit.getBooks();

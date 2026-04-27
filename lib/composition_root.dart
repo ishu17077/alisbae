@@ -3,7 +3,6 @@ import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract
 import 'package:alisbae/data/datasource/book_datasource/sqflite_book_datasource_impl.dart';
 import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_contract.dart';
 import 'package:alisbae/data/datasource/folder_datasource/sqflite_folder_datasource_impl.dart';
-import 'package:alisbae/data/datasource/sqflite_datasource_impl.dart';
 import 'package:alisbae/data/factory/local_database_factory.dart';
 import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/model/search_result.dart';
@@ -62,7 +61,7 @@ class CompositionRoot {
         BlocProvider(create: (context) => _bookSearchCubit),
         BlocProvider(create: (context) => _bookDownloadsCubit),
       ],
-      child: HomePage(router: _homeRouter),
+      child: HomePage(_homeRouter),
     );
   }
 
@@ -71,18 +70,6 @@ class CompositionRoot {
     required BookSearchResult? searchResult,
     required BookStore? bookStore,
   }) {
-    assert(
-      searchResult != null && bookStore != null,
-      "Both search result and bookStore cannot be null",
-    );
-    assert(
-      isDownloaded && bookStore == null,
-      "BookStore is not passed when book is already downloaded is marked",
-    );
-    assert(
-      !isDownloaded && searchResult == null,
-      "Book Search is not passed when book is not downloaded is marked",
-    );
 
     final bookViewModel = BookViewModel(
       _homeViewModel,
@@ -101,7 +88,7 @@ class CompositionRoot {
           create: (context) => BookBloc(bookViewModel, _bookDownloadsCubit),
         ),
       ],
-      child: BookDetailsPage(router: _homeRouter),
+      child: BookDetailsPage(_homeRouter),
     );
   }
 

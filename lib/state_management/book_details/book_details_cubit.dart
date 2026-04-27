@@ -19,7 +19,11 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
         return;
       }
       final bookDetails = await _bookViewModel.getBookDetailsOnline();
-      emit(BookFoundOnline(bookDetails));
+      if (bookDetails != null) {
+        emit(BookFoundOnline(bookDetails));
+        return;
+      }
+      emit(BookFoundError());
     } catch (e) {
       emit(BookFoundError());
     }

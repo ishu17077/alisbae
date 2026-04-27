@@ -12,7 +12,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class HomePage extends StatefulWidget {
   final IHomeRouter _router;
-  const HomePage({super.key, required this._router});
+  const HomePage(this._router);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -122,7 +122,6 @@ class _HomePageState extends State<HomePage>
       },
       child: Card(
         elevation: 5.0,
-
         child: Padding(
           padding: const EdgeInsets.only(
             top: 0.0,
@@ -145,7 +144,6 @@ class _HomePageState extends State<HomePage>
                       );
                       _bookDownloadsCubit.getBooks();
                     },
-
                     icon: Icon(Icons.close),
                   ),
                   IconButton(
@@ -243,7 +241,9 @@ class _HomePageState extends State<HomePage>
       _warmedImageUrls.add(pathUrl);
       unawaited(
         precacheImage(
-          onDevice ? FileImage(File(pathUrl)) : NetworkImage(pathUrl),
+          onDevice
+              ? FileImage(File(pathUrl)) as ImageProvider
+              : NetworkImage(pathUrl),
           context,
         ),
       );
@@ -257,8 +257,13 @@ class _HomePageState extends State<HomePage>
     required double? height,
     BoxFit fit = BoxFit.fitHeight,
   }) {
+    final ImageProvider<Object> imageProvider =
+        (path != null && path.isNotEmpty)
+            ? FileImage(File(path)) as ImageProvider
+            : NetworkImage(url!);
+
     return Image(
-      image: path != null ? FileImage(File(path)) : NetworkImage(url!),
+      image: imageProvider,
       width: width,
       height: height,
       fit: fit,
@@ -347,7 +352,6 @@ class _HomePageState extends State<HomePage>
                 ),
               );
             },
-
             itemCount: searchResults.length,
           );
         }

@@ -12,15 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BookDetailsPage extends StatefulWidget {
-  final BookSearchResult bookSearchResult;
-  // ignore: unused_field
   final IHomeRouter _router;
-  final bool isDownloaded;
-  const BookDetailsPage({
-    required this.bookSearchResult,
-    required this._router,
-    this.isDownloaded = false,
-  });
+  const BookDetailsPage(this._router);
 
   @override
   State<BookDetailsPage> createState() => _BookDetailsPageState();
@@ -37,8 +30,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     _bookDetailsCubit = context.read<BookDetailsCubit>();
     _downloadBooksBloc = context.read<DownloadBooksBloc>();
     _bookBloc = context.read<BookBloc>();
-    _bookDetailsCubit.bookInfo(bookUrl: widget.bookSearchResult.postLink);
-    _downloadBooksBloc.add(DownloadBookEvent.initial(widget.bookSearchResult));
+    _bookDetailsCubit.bookInfo();
+    _downloadBooksBloc.add(DownloadBookEvent.initial());
   }
 
   @override
@@ -86,10 +79,10 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                           _bookBloc.add(
                             isLiked
                                 ? BookEvent.dislikeBook(
-                                    downloadBookState.bookStore.id!,
+                                    downloadBookState.bookStore.id,
                                   )
                                 : BookEvent.likeBook(
-                                    downloadBookState.bookStore.id!,
+                                    downloadBookState.bookStore.id,
                                   ),
                           );
                         },
@@ -124,7 +117,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                     child: _buildBookDetailsPage(
                       author: bookDetailsState.bookDetails.bookAuthor,
                       description: bookDetailsState.bookDetails.description,
-                      title: widget.bookSearchResult.bookTitle,
+                      title: bookDetailsState.bookDetails.bookName,
                       datePublished: bookDetailsState.bookDetails.datePublished,
                       imagePath: null,
                       imageUrl: bookDetailsState.bookDetails.imageLink,
@@ -213,10 +206,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         }
 
         if (state is DownloadSuccess) {
-          _downloadBooksBloc.add(
-            DownloadBookEvent.initial(widget.bookSearchResult),
-          );
-          _bookDetailsCubit.bookInfo(bookUrl: widget.bookSearchResult.postLink);
+          _downloadBooksBloc.add(DownloadBookEvent.initial());
+          _bookDetailsCubit.bookInfo();
 
           return FloatingActionButton(
             onPressed: () {},
@@ -228,9 +219,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
           return FloatingActionButton(
             onPressed: () {
               _downloadBooksBloc.add(DownloadBookDelete(state.bookStore.id!));
-              _bookDetailsCubit.bookInfo(
-                bookUrl: widget.bookSearchResult.postLink,
-              );
+              _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.remove_shopping_cart),
           );
@@ -238,24 +227,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         if (state is DeleteSuccess && bookDetailsState is BookFoundLocally) {
           return FloatingActionButton(
             onPressed: () {
-              _downloadBooksBloc.add(
-                DownloadBookEvent.downloadBook(
-                  BookDetails(
-                    bookAuthor: bookDetailsState.bookStore.author,
-                    bookName: bookDetailsState.bookStore.name,
-                    bookUrl: bookDetailsState.bookStore.serverUrl!,
-                    datePublished: DateTime.now(),
-                    description: bookDetailsState.bookStore.description ?? '',
-                    fileName: "",
-                    imageLink: "",
-                    language: "",
-                  ),
-                  widget.bookSearchResult,
-                ),
-              );
-              _bookDetailsCubit.bookInfo(
-                bookUrl: bookDetailsState.bookStore.serverUrl!,
-              );
+              _downloadBooksBloc.add(DownloadBookEvent.downloadBook());
+              _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.download),
           );
@@ -263,15 +236,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
             bookDetailsState is BookFoundOnline) {
           return FloatingActionButton(
             onPressed: () {
-              _downloadBooksBloc.add(
-                DownloadBookEvent.downloadBook(
-                  bookDetailsState.bookDetails,
-                  widget.bookSearchResult,
-                ),
-              );
-              _bookDetailsCubit.bookInfo(
-                bookUrl: bookDetailsState.bookDetails.bookUrl,
-              );
+              _downloadBooksBloc.add(DownloadBookEvent.downloadBook());
+              _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.download),
           );
@@ -279,39 +245,16 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         if (bookDetailsState is BookFoundOnline) {
           return FloatingActionButton(
             onPressed: () {
-              _downloadBooksBloc.add(
-                DownloadBookEvent.downloadBook(
-                  bookDetailsState.bookDetails,
-                  widget.bookSearchResult,
-                ),
-              );
-              _bookDetailsCubit.bookInfo(
-                bookUrl: bookDetailsState.bookDetails.bookUrl,
-              );
+              _downloadBooksBloc.add(DownloadBookEvent.downloadBook());
+              _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.download),
           );
         } else if (bookDetailsState is BookFoundLocally) {
           return FloatingActionButton(
             onPressed: () {
-              _downloadBooksBloc.add(
-                DownloadBookEvent.downloadBook(
-                  BookDetails(
-                    bookAuthor: bookDetailsState.bookStore.author,
-                    bookName: bookDetailsState.bookStore.name,
-                    bookUrl: bookDetailsState.bookStore.serverUrl!,
-                    datePublished: DateTime.now(),
-                    description: bookDetailsState.bookStore.description ?? '',
-                    fileName: "",
-                    imageLink: "",
-                    language: "",
-                  ),
-                  widget.bookSearchResult,
-                ),
-              );
-              _bookDetailsCubit.bookInfo(
-                bookUrl: bookDetailsState.bookStore.serverUrl!,
-              );
+              _downloadBooksBloc.add(DownloadBookEvent.downloadBook());
+              _bookDetailsCubit.bookInfo();
             },
             child: Icon(Icons.download),
           );

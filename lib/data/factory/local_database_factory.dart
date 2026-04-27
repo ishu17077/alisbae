@@ -71,11 +71,11 @@ class LocalDatabaseFactory {
           REFERENCES ${FoldersTable.tableName}(${FoldersTable.id})""",
         );
         await txn.execute(
-          "CREATE UNIQUE INDEX uidx_books_folder ON (${BooksTable.bookName}, IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+          "CREATE UNIQUE INDEX uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
         );
-        
+
         await txn.execute(
-          "CREATE UNIQUIE uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1),${FoldersTable.name})",
+          "CREATE UNIQUE INDEX uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1), ${FoldersTable.name})",
         );
       });
     }
@@ -116,7 +116,7 @@ class LocalDatabaseFactory {
     await db
         .execute("""CREATE TABLE ${FoldersTable.tableName}(
     ${FoldersTable.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    ${FoldersTable.name} VARCHAR(255) NOT NULL CHECK(${BooksTable.bookName} <> ''),
+    ${FoldersTable.name} VARCHAR(255) NOT NULL CHECK(${FoldersTable.name} <> ''),
     ${FoldersTable.color} VARCHAR(255),
     ${FoldersTable.parentFolderId} INTEGER,
     FOREIGN KEY (${FoldersTable.parentFolderId}) 
@@ -143,11 +143,11 @@ class LocalDatabaseFactory {
       );
 
       batch.execute(
-        "CREATE UNIQUE INDEX uidx_books_folder ON (${BooksTable.bookName}, IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+        "CREATE UNIQUE INDEX uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
       );
 
       batch.execute(
-        "CREATE UNIQUIE uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1),${FoldersTable.name})",
+        "CREATE UNIQUE INDEX uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1), ${FoldersTable.name})",
       );
       //TODO: Non essential queries to improve performance
     } catch (e) {
