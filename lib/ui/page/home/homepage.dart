@@ -115,14 +115,9 @@ class _HomePageState extends State<HomePage>
       onTap: () {
         widget._router.onShowBookDetailsUi(
           context,
-          BookSearchResult(
-            postImage: bookStore.imageUrl ?? '',
-            id: bookStore.serverId ?? 1,
-            postTitle: bookStore.name,
-            postLink: bookStore.serverUrl ?? '',
-            bookTitle: bookStore.name,
-            author: bookStore.author,
-          ),
+          bookStore: bookStore,
+          isDownloaded: true,
+          searchResult: null,
         );
       },
       child: Card(
@@ -145,7 +140,7 @@ class _HomePageState extends State<HomePage>
                 children: [
                   IconButton(
                     onPressed: () async {
-                      await _bookDownloadsCubit.bookViewModel.deleteBook(
+                      await _bookDownloadsCubit.homeViewModel.deleteBook(
                         bookStore.id!,
                       );
                       _bookDownloadsCubit.getBooks();
@@ -158,7 +153,7 @@ class _HomePageState extends State<HomePage>
                       setState(() {
                         isLiked = !isLiked;
                       });
-                      _bookDownloadsCubit.bookViewModel.updateLikeStatus(
+                      _bookDownloadsCubit.homeViewModel.updateLikeStatus(
                         id: bookStore.id!,
                         isLiked: isLiked,
                       );
@@ -319,7 +314,12 @@ class _HomePageState extends State<HomePage>
               var searchResult = searchResults[index];
               return ListTile(
                 onTap: () async {
-                  widget._router.onShowBookDetailsUi(context, searchResult);
+                  widget._router.onShowBookDetailsUi(
+                    context,
+                    bookStore: null,
+                    isDownloaded: false,
+                    searchResult: searchResult,
+                  );
                 },
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(6),

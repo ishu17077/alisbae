@@ -1,5 +1,6 @@
 import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/data/model/book_store.dart';
+
 import 'package:alisbae/viewmodel/home/home_view_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -10,26 +11,14 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
   final BookViewModel _bookViewModel;
   BookDetailsCubit(this._bookViewModel) : super(BookDetailsInitial());
 
-  Future<void> bookInfo({required String bookUrl}) async {
-    final book = _bookViewModel.books.firstWhere(
-      (book) {
-        if (book.serverUrl == null || book.serverUrl!.isEmpty) {
-          return false;
-        }
-        return book.serverUrl!.replaceAll(RegExp(r'/$'), '') ==
-            bookUrl.replaceAll(RegExp(r'/$'), '');
-      },
-      orElse: () =>
-          BookStore(name: "", author: "", bookPath: "", imageUrl: null),
-    );
+  Future<void> bookInfo() async {
     try {
-      if (book.name.isNotEmpty &&
-          book.author.isNotEmpty &&
-          book.bookPath.isNotEmpty) {
+      final book = await _bookViewModel.checkBookAlreadyDownloaded();
+      if (book != null) {
         emit(BookFoundLocally(book));
         return;
       }
-      final bookDetails = await _bookViewModel.getBookDetailsOnline(bookUrl);
+      final bookDetails = await _bookViewModel.getBookDetailsOnline();
       emit(BookFoundOnline(bookDetails));
     } catch (e) {
       emit(BookFoundError());

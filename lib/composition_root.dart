@@ -25,17 +25,14 @@ import 'package:path_provider/path_provider.dart';
 
 class CompositionRoot {
   static late final DataCrawler _dataCrawler;
-  static late final BookViewModel _bookViewModel;
   static late final IBookDataSource _bookDataSource;
   static late final IFolderDatasource _folderDatasource;
   static late final IHomeRouter _homeRouter;
   static late final Directory _dir;
   static late final BookSearchCubit _bookSearchCubit;
   static late final BookDownloadsCubit _bookDownloadsCubit;
-  static late final DownloadBooksBloc _downloadBooksBloc;
-  static late final BookBloc _bookBloc;
-  static late final BookDetailsCubit _bookDetailsCubit;
   static late final ImageSaver _imageSaver;
+  static late final HomeViewModel _homeViewModel;
   static Future<void> configure() async {
     _dir = await getApplicationDocumentsDirectory();
     final _imageDir = await getApplicationDocumentsDirectory();
@@ -45,7 +42,7 @@ class CompositionRoot {
     _bookDataSource = SqfliteBookDatasourceImpl(db);
     _folderDatasource = SqfliteFolderDatasourceImpl(db);
     _imageSaver = ImageSaver(_imageDir);
-    _bookViewModel = BookViewModel(
+    _homeViewModel = HomeViewModel(
       _bookDataSource,
       _folderDatasource,
       _dataCrawler,
@@ -55,11 +52,8 @@ class CompositionRoot {
       showBookDetailsUi: showBookDetailsUi,
       showBookViewerUi: showBookViewerUi,
     );
-    _bookDownloadsCubit = BookDownloadsCubit(_bookViewModel);
-    _bookSearchCubit = BookSearchCubit(_bookViewModel);
-    _bookDetailsCubit = BookDetailsCubit(_bookViewModel);
-    _downloadBooksBloc = DownloadBooksBloc(_bookViewModel, _bookDownloadsCubit);
-    _bookBloc = BookBloc(_bookViewModel, _bookDownloadsCubit);
+    _bookDownloadsCubit = BookDownloadsCubit(_homeViewModel);
+    _bookSearchCubit = BookSearchCubit(_homeViewModel);
   }
 
   static Widget composeHomeUi() {
@@ -72,28 +66,54 @@ class CompositionRoot {
     );
   }
 
-  static Widget showBookDetailsUi(BookSearchResult searchResult) {
+  static Widget showBookDetailsUi({
+    required bool isDownloaded,
+    required BookSearchResult? searchResult,
+    required BookStore? bookStore,
+  }) {
+    assert(
+      searchResult != null && bookStore != null,
+      "Both search result and bookStore cannot be null",
+    );
+    assert(
+      isDownloaded && bookStore == null,
+      "BookStore is not passed when book is already downloaded is marked",
+    );
+    assert(
+      !isDownloaded && searchResult == null,
+      "Book Search is not passed when book is not downloaded is marked",
+    );
+
+    final bookViewModel = BookViewModel(
+      _homeViewModel,
+      isDownloaded: isDownloaded,
+      bookSearchResult: searchResult,
+      bookStore: bookStore,
+    );
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => BookDetailsCubit(_bookViewModel)),
+        BlocProvider(create: (context) => BookDetailsCubit(bookViewModel)),
         BlocProvider(
           create: (context) =>
-              DownloadBooksBloc(_bookViewModel, _bookDownloadsCubit),
+              DownloadBooksBloc(bookViewModel, _bookDownloadsCubit),
         ),
         BlocProvider(
-          create: (context) => BookBloc(_bookViewModel, _bookDownloadsCubit),
+          create: (context) => BookBloc(bookViewModel, _bookDownloadsCubit),
         ),
       ],
-      child: BookDetailsPage(
-        bookSearchResult: searchResult,
-        router: _homeRouter,
-      ),
+      child: BookDetailsPage(router: _homeRouter),
     );
   }
 
   static Widget showBookViewerUi(BookStore bookStore) {
+    final bookViewModel = BookViewModel(
+      _homeViewModel,
+      isDownloaded: true,
+      bookStore: bookStore,
+      bookSearchResult: null,
+    );
     return BlocProvider(
-      create: (context) => BookBloc(_bookViewModel, _bookDownloadsCubit),
+      create: (context) => BookBloc(bookViewModel, _bookDownloadsCubit),
       child: BookViewer(bookStore: bookStore),
     );
   }

@@ -1,62 +1,98 @@
 part of '../home/home_view_model.dart';
 
-class BookViewModel extends HomeViewModel {
-  List<BookStore> books = [];
+class BookViewModel {
+  HomeViewModel homeViewModel;
+  BookSearchResult? bookSearchResult;
+  BookDetails? bookDetails;
+  bool isDownloaded;
+  BookStore? bookStore;
   BookViewModel(
-    super._bookDataSource,
-    super._folderDatasource,
-    super._dataCrawler,
-    super._imageSaver,
-  );
+    this.homeViewModel, {
+    required this.isDownloaded,
+    required this.bookStore,
+    required this.bookSearchResult,
+  }) {
+    assert(
+      isDownloaded && bookStore != null,
+      "Bookstore cannot  be null if the book is already downloaded",
+    );
+    assert(
+      !isDownloaded && bookSearchResult != null,
+      "BookSearchResult cannot be null, if book is not downloaded",
+    );
+    checkBookAlreadyDownloaded();
+  }
+
+  Future<BookStore?> checkBookAlreadyDownloaded() async {
+    if (bookStore != null) return bookStore!;
+    if (!isDownloaded) {
+      bookStore ??= await homeViewModel._bookDataSource.searchBookByServerId(
+        bookSearchResult!.id,
+      );
+      if (bookStore != null) isDownloaded = true;
+    }
+    return bookStore;
+  }
 
   Future<BookStore?> downloadBook({
-    required BookDetails bookDetails,
-    required BookSearchResult bookSearchResult,
     Function(int count, int total)? callback,
   }) async {
-    try {
-      final bookPresent = await _bookDataSource.searchBookByServerId(
-        bookSearchResult.id,
+    if (bookStore != null) {
+      return bookStore;
+    }
+    if (bookSearchResult == null) {
+      Fluttertoast.showToast(
+        msg: "Something went wrong, please contact your unpaid developer.",
       );
+      return null;
+    }
+    await getBookDetailsOnline();
+    try {
+      final bookPresent = await homeViewModel._bookDataSource
+          .searchBookByServerId(bookSearchResult!.id);
       if (bookPresent != null) {
         Fluttertoast.showToast(msg: "This book is already downloaded");
         return bookPresent;
       }
 
-      final filePath = await _dataCrawler.downloadBook(
-        fileName: bookDetails.fileName!,
+      final filePath = await homeViewModel._dataCrawler.downloadBook(
+        fileName: bookDetails!.fileName!,
         callback: callback,
       );
       if (filePath == null || filePath.isEmpty) {
         return null;
       }
       String? imagePath;
-      if (bookDetails.imageLink.isNotEmpty) {
-        imagePath = await _imageSaver.saveImage(
-          bookDetails.imageLink,
-          bookSearchResult.bookTitle,
+      if (bookDetails!.imageLink.isNotEmpty) {
+        imagePath = await homeViewModel._imageSaver.saveImage(
+          bookDetails!.imageLink,
+          bookSearchResult!.bookTitle,
         );
       }
-      _imageSaver.saveImage(bookDetails.imageLink, bookSearchResult.bookTitle);
+      homeViewModel._imageSaver.saveImage(
+        bookDetails!.imageLink,
+        bookSearchResult!.bookTitle,
+      );
       final book = BookStore(
-        name: bookSearchResult.bookTitle,
-        author: bookSearchResult.author,
-        imageUrl: bookSearchResult.postImage,
+        name: bookSearchResult!.bookTitle,
+        author: bookSearchResult!.author,
+        imageUrl: bookSearchResult!.postImage,
         bookPath: filePath,
         addedOn: DateTime.now(),
         currentRead: 1,
         isFavorite: false,
         lastRead: null,
-        serverId: bookSearchResult.id,
-        serverUrl: bookSearchResult.postLink,
-        description: bookDetails.description,
+        serverId: bookSearchResult!.id,
+        serverUrl: bookSearchResult!.postLink,
+        description: bookDetails!.description,
         rating: null,
         review: null,
         imagePath: imagePath,
       );
-      final id = await _bookDataSource.addBook(book);
+      final id = await homeViewModel._bookDataSource.addBook(book);
       final bookReturn = BookStore.fromJSON({...book.toJSON(), "id": id});
-      books.add(bookReturn);
+      bookStore = bookReturn;
+      homeViewModel.books.add(bookReturn);
       return bookReturn;
     } catch (e) {
       Fluttertoast.showToast(
@@ -66,30 +102,40 @@ class BookViewModel extends HomeViewModel {
     }
   }
 
-  Future<BookDetails> getBookDetailsOnline(String bookUrl) async {
-    return BookDetails.fromJSON(
-      await _dataCrawler.getBookInfo(bookUrl: bookUrl),
+  Future<BookDetails> getBookDetailsOnline() async {
+    if (bookDetails != null) {
+      return bookDetails!;
+    }
+    bookDetails = BookDetails.fromJSON(
+      await homeViewModel._dataCrawler.getBookInfo(
+        bookUrl: bookSearchResult!.postLink,
+      ),
     );
+    return bookDetails!;
   }
 
   Future<void> updateLastRead({
-    required int id,
     required int currentRead,
     required DateTime lastRead,
   }) async {
-    final book = books.firstWhere((book) => book.id == id);
+    if (bookStore == null) return;
+    final book = homeViewModel.books.firstWhere(
+      (book) => book.id == bookStore!.id,
+    );
     book.currentRead = currentRead;
     book.lastRead = lastRead;
 
-    await _bookDataSource.updateLastRead(id: id, currentRead: currentRead);
+    await homeViewModel._bookDataSource.updateLastRead(
+      id: bookStore!.id,
+      currentRead: currentRead,
+    );
   }
 
-  Future<void> updateRatingandReview({
-    required int id,
-    int? rating,
-    String? review,
-  }) async {
-    final book = books.firstWhere((book) => book.id == id);
+  Future<void> updateRatingandReview({int? rating, String? review}) async {
+    if (bookStore == null) return;
+    final book = homeViewModel.books.firstWhere(
+      (book) => book.id == bookStore!.id,
+    );
     if (rating != null) {
       book.rating = rating;
     }
@@ -97,10 +143,22 @@ class BookViewModel extends HomeViewModel {
       book.review = review;
     }
 
-    await _bookDataSource.setRatingandReview(id, rating, review);
+    await homeViewModel._bookDataSource.setRatingandReview(
+      bookStore!.id,
+      rating,
+      review,
+    );
   }
 
-  Future<BookStore?> searchBookByServerId(int id) async {
-    return await _bookDataSource.searchBookById(id);
+  Future<BookStore?> searchBookByServerId() async {
+    if (bookSearchResult == null) return bookStore;
+    return await homeViewModel._bookDataSource.searchBookByServerId(
+      bookSearchResult!.id,
+    );
+  }
+
+  Future<void> updateLikeStatus({required bool isLiked}) async {
+    if (bookStore == null) return;
+    await homeViewModel.updateLikeStatus(id: bookStore!.id, isLiked: isLiked);
   }
 }
