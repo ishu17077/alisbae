@@ -41,12 +41,14 @@ class SqfliteFolderDatasourceImpl implements IFolderDatasource {
   }
 
   @override
-  Future<List<FolderStore>> listAllFolders({int? folderId}) async {
+  Future<List<FolderStore>> listFolders({int? parentFolderId}) async {
     try {
       final directories = await _db.query(
         FoldersTable.tableName,
-        where: folderId != null ? "${FoldersTable.id} = ?" : null,
-        whereArgs: folderId != null ? [folderId] : null,
+        where: parentFolderId != null
+            ? "${FoldersTable.parentFolderId} = ?"
+            : "${FoldersTable.parentFolderId} IS NULL",
+        whereArgs: parentFolderId != null ? [parentFolderId] : [],
       );
       return directories
           .map((directory) => FolderStore.fromJSON(directory))
@@ -54,5 +56,18 @@ class SqfliteFolderDatasourceImpl implements IFolderDatasource {
     } on DatabaseException catch (e) {
       throw Exception(e.toString());
     }
+  }
+
+  @override
+  Future<FolderStore?> getFolder(int id) async {
+    final directory = await _db.query(
+      FoldersTable.tableName,
+      where: "${FoldersTable.id} = ?",
+      whereArgs: [id],
+    );
+    if (directory.isEmpty) {
+      return null;
+    }
+    return FolderStore.fromJSON(directory[0]);
   }
 }

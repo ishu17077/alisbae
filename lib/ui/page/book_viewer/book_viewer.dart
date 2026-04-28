@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -19,9 +18,9 @@ class BookViewer extends StatefulWidget {
 class _BookViewerState extends State<BookViewer> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   late final BookBloc _bookBloc;
-  late final AppLifecycleListener _listener;
+  // late final AppLifecycleListener _listener;
   late bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-  bool _showToolbar = true;
+  final bool _showToolbar = true;
   CancelableOperation? cancelableOperation;
 
   bool isSaveLoading = false;
@@ -41,7 +40,7 @@ class _BookViewerState extends State<BookViewer> {
   void dispose() {
     _bookBloc.add(
       BookEvent.updateLastRead(
-        widget.bookStore.id!,
+        widget.bookStore.id,
         lastRead: DateTime.now(),
         currentRead: _pdfViewerController.pageNumber,
       ),
@@ -52,9 +51,10 @@ class _BookViewerState extends State<BookViewer> {
   @override
   void initState() {
     _bookBloc = context.read<BookBloc>();
-    _listener = AppLifecycleListener(
+    // _listener =
+    AppLifecycleListener(
       onPause: () => BookEvent.updateLastRead(
-        widget.bookStore.id!,
+        widget.bookStore.id,
         lastRead: DateTime.now(),
         currentRead: _pdfViewerController.pageNumber,
       ),

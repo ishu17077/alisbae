@@ -13,7 +13,6 @@ class BookBloc extends Bloc<BookEvent, BookState> {
     on<LikeBook>((event, emit) async {
       try {
         await bookViewModel.updateLikeStatus(
-          id: event.bookStoreId,
           isLiked: true,
         );
 
@@ -26,10 +25,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
 
     on<DislikeBook>((event, emit) async {
       try {
-        await bookViewModel.updateLikeStatus(
-          id: event.bookStoreId,
-          isLiked: false,
-        );
+        await bookViewModel.updateLikeStatus(isLiked: false);
 
         await bookDownloadsCubit.getBooks();
         emit(BookDislikeSuccess());
@@ -41,7 +37,6 @@ class BookBloc extends Bloc<BookEvent, BookState> {
     on<BookUpdateLastRead>((event, emit) async {
       try {
         await bookViewModel.updateLastRead(
-          id: event.bookStoreId,
           currentRead: event.currentRead,
           lastRead: DateTime.now(),
         );
@@ -54,7 +49,6 @@ class BookBloc extends Bloc<BookEvent, BookState> {
     on<BookUpdateRatingandReview>((event, emit) async {
       try {
         await bookViewModel.updateRatingandReview(
-          id: event.bookStoreId,
           rating: event.rating,
           review: event.review,
         );

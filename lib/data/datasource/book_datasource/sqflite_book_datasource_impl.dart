@@ -1,4 +1,3 @@
-
 import 'package:alisbae/data/constant/table_name.dart';
 import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
 import 'package:alisbae/data/model/book_store.dart';
@@ -148,7 +147,24 @@ class SqfliteBookDatasourceImpl implements IBookDataSource {
   }
 
   @override
-  Future<void> setFolder({required int? folderId}) async {
-    await _db.update(BooksTable.tableName, {BooksTable.folderId: folderId});
+  Future<void> setFolder({required int bookId, required int? folderId}) async {
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.folderId: folderId},
+      where: "${BooksTable.id} = ?",
+      whereArgs: [bookId],
+    );
+  }
+
+  @override
+  Future<List<BookStore>> getFolderBooks(int? folderId) async {
+    final bookMaps = await _db.query(
+      BooksTable.tableName,
+      where: folderId != null
+          ? "${BooksTable.folderId} = ?"
+          : "${BooksTable.folderId} IS NULL",
+      whereArgs: folderId != null ? [folderId] : null,
+    );
+    return bookMaps.map((bookMap) => BookStore.fromJSON(bookMap)).toList();
   }
 }

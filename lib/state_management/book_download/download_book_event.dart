@@ -2,21 +2,15 @@ part of 'download_book_bloc.dart';
 
 sealed class DownloadBookEvent extends Equatable {
   const DownloadBookEvent();
-  factory DownloadBookEvent.initial(BookSearchResult bookSearchResult) =>
-      DownloadBookInitial(bookSearchResult);
-  factory DownloadBookEvent.downloadBook(
-    BookDetails bookDetails,
-    BookSearchResult bookSearchResult,
-  ) => DownloadBookStart(bookDetails, bookSearchResult);
+  factory DownloadBookEvent.initial() => DownloadBookInitial();
+  factory DownloadBookEvent.downloadBook() => DownloadBookStart();
 }
 
 class DownloadBookInitial extends DownloadBookEvent {
-  final BookSearchResult bookSearchResult;
-
-  const DownloadBookInitial(this.bookSearchResult);
+  const DownloadBookInitial();
 
   @override
-  List<Object?> get props => [bookSearchResult];
+  List<Object?> get props => [];
 }
 
 class DownloadBookDelete extends DownloadBookEvent {
@@ -30,10 +24,9 @@ class DownloadBookDelete extends DownloadBookEvent {
 }
 
 class DownloadBookStart extends DownloadBookEvent {
-  final BookDetails bookDetails;
-  final BookSearchResult bookSearchResult;
+  
 
-  const DownloadBookStart(this.bookDetails, this.bookSearchResult);
+  const DownloadBookStart();
   @override
-  List<Object?> get props => [bookDetails.bookName, bookDetails.bookAuthor];
+  List<Object?> get props => [];
 }

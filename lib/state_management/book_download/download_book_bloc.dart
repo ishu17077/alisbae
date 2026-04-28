@@ -1,6 +1,4 @@
-import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/data/model/book_store.dart';
-import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 
 import 'package:alisbae/viewmodel/home/home_view_model.dart';
@@ -11,14 +9,12 @@ part 'download_book_event.dart';
 part 'download_book_state.dart';
 
 class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
-  final BookViewModel _bookViewModel;
+  final BookViewModel bookViewModel;
   final BookDownloadsCubit _bookDownloadsCubit;
-  DownloadBooksBloc(this._bookViewModel, this._bookDownloadsCubit)
+  DownloadBooksBloc(this.bookViewModel, this._bookDownloadsCubit)
     : super(DownloadBookState.initial()) {
     on<DownloadBookInitial>((event, emit) async {
-      final ifAlreadyPresent = await _bookViewModel.searchBookByServerId(
-        event.bookSearchResult.id,
-      );
+      final ifAlreadyPresent = await bookViewModel.searchBookByServerId();
       if (ifAlreadyPresent != null) {
         emit(AlreadyDownloaded(ifAlreadyPresent));
       }
@@ -26,9 +22,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
 
     on<DownloadBookStart>((event, emit) async {
       emit(DownloadBookState.downloading(0, 100));
-      final result = await _bookViewModel.downloadBook(
-        bookDetails: event.bookDetails,
-        bookSearchResult: event.bookSearchResult,
+      final result = await bookViewModel.downloadBook(
         callback: (count, total) {
           emit(DownloadBookState.downloading(count, total));
         },
@@ -39,14 +33,18 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
       }
 
       emit(DownloadBookState.success(result));
-      await _bookDownloadsCubit.getBooks();
+      await _bookDownloadsCubit.getBooks(
+        folderId: bookViewModel.currentFolder?.id,
+      );
     });
 
     on<DownloadBookDelete>((event, emit) async {
-      await _bookViewModel.deleteBook(event.id);
+      await bookViewModel.homeViewModel.deleteBook(event.id);
 
       emit(DeleteSuccess());
-      await _bookDownloadsCubit.getBooks();
+      await _bookDownloadsCubit.getBooks(
+        folderId: bookViewModel.currentFolder?.id,
+      );
     });
   }
 }
