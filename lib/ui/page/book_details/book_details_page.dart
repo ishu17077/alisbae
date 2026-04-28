@@ -4,6 +4,7 @@ import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
+import 'package:alisbae/ui/widget/delete_alert_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -214,11 +215,20 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
 
         if (state is AlreadyDownloaded) {
           return FloatingActionButton(
+            backgroundColor: Colors.red,
             onPressed: () {
-              _downloadBooksBloc.add(DownloadBookDelete(state.bookStore.id));
-              _bookDetailsCubit.bookInfo();
+              buildDeleteBookAlertBox(context, state.bookStore).then((
+                shouldDelete,
+              ) {
+                if (shouldDelete) {
+                  _downloadBooksBloc.add(
+                    DownloadBookDelete(state.bookStore.id),
+                  );
+                  _bookDetailsCubit.bookInfo();
+                }
+              });
             },
-            child: Icon(Icons.remove_shopping_cart),
+            child: Icon(Icons.delete),
           );
         }
         if (state is DeleteSuccess && bookDetailsState is BookFoundLocally) {

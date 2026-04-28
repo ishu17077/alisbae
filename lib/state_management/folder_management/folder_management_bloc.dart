@@ -37,7 +37,7 @@ class FolderManagementBloc
 
         emit(FolderAddSuccess(folderStore));
       } catch (e) {
-        Fluttertoast.showToast(msg: e.toString());
+        Fluttertoast.showToast(msg: "Folder with the same name exists");
         emit(FolderOperationFailed());
       }
     });

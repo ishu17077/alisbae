@@ -105,7 +105,12 @@ class HomeViewModel {
   }
 
   Future<void> deleteFolder(int id) async {
+    final books = await _bookDataSource.getAllFolderBooksRecursively(id);
+
     await _folderDatasource.deleteFolder(id);
+    books.map((book) {
+      _dataCrawler.deleteDownload(book.bookPath);
+    });
   }
 
   static List<BookStore> _filterUnsavedBooks(List<BookStore> books) {

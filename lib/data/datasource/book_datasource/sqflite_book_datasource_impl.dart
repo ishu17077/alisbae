@@ -167,4 +167,23 @@ class SqfliteBookDatasourceImpl implements IBookDataSource {
     );
     return bookMaps.map((bookMap) => BookStore.fromJSON(bookMap)).toList();
   }
+
+  @override
+  Future<List<BookStore>> getAllFolderBooksRecursively(int folderId) async {
+    List<BookStore> books = await getFolderBooks(folderId);
+
+    final childFoldersMap = await _db.query(
+      FoldersTable.tableName,
+      where: "${FoldersTable.parentFolderId} = ?",
+      whereArgs: [folderId],
+    );
+
+    for (final folderMap in childFoldersMap) {
+      final childFolderId = folderMap[FoldersTable.id] as int;
+      final childBooks = await getAllFolderBooksRecursively(childFolderId);
+      books.addAll(childBooks);
+    }
+
+    return books;
+  }
 }

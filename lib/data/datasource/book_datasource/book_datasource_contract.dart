@@ -4,6 +4,7 @@ abstract interface class IBookDataSource {
   Future<int> addBook(BookStore book);
   Future<List<BookStore>> getDownloadedBooks();
   Future<List<BookStore>> getFolderBooks(int? folderId);
+  Future<List<BookStore>> getAllFolderBooksRecursively(int folderId);
   Future<void> deleteBook(int id);
   Future<void> updateLastRead({
     required int id,

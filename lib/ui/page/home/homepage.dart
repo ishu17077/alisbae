@@ -8,6 +8,8 @@ import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/state_management/home/folder_cubit.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
+import 'package:alisbae/ui/widget/delete_alert_box.dart';
+import 'package:alisbae/ui/widget/delete_folder_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -92,12 +94,19 @@ class _HomePageState extends State<HomePage>
                   currentFolder != null
                       ? IconButton(
                           onPressed: () {
-                            _folderManagementBloc.add(
-                              FolderManagementEvent.deleteFolder(
-                                currentFolder!,
-                              ),
-                            );
-                            _handleBackNavigation();
+                            buildDeleteFolderAlertBox(
+                              context,
+                              currentFolder!,
+                            ).then((shouldDelete) {
+                              if (shouldDelete) {
+                                _folderManagementBloc.add(
+                                  FolderManagementEvent.deleteFolder(
+                                    currentFolder!,
+                                  ),
+                                );
+                                _handleBackNavigation();
+                              }
+                            });
                           },
                           icon: Icon(Icons.remove_circle, color: Colors.red),
                         )
@@ -110,9 +119,35 @@ class _HomePageState extends State<HomePage>
                         ),
                       );
                     },
-                    icon: Icon(
-                      Icons.add_circle_outline_outlined,
-                      color: Colors.teal,
+                    color: Colors.teal,
+                    focusColor: Colors.teal,
+                    hoverColor: Colors.teal,
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(Colors.teal),
+                    ),
+                    icon: Padding(
+                      padding: EdgeInsetsGeometry.symmetric(
+                        horizontal: 3,
+                        vertical: 0,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Add Folder ",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+
+                          Icon(
+                            Icons.add_circle_outline_outlined,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -393,10 +428,16 @@ class _HomePageState extends State<HomePage>
                 children: [
                   IconButton(
                     onPressed: () async {
-                      await _bookDownloadsCubit.homeViewModel.deleteBook(
-                        bookStore.id,
-                      );
-                      _bookDownloadsCubit.getBooks();
+                      buildDeleteBookAlertBox(context, bookStore).then((
+                        shouldDelete,
+                      ) async {
+                        if (shouldDelete) {
+                          await _bookDownloadsCubit.homeViewModel.deleteBook(
+                            bookStore.id,
+                          );
+                          _bookDownloadsCubit.getBooks();
+                        }
+                      });
                     },
                     icon: Icon(Icons.close),
                   ),
