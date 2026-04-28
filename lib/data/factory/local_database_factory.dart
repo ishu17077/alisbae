@@ -68,7 +68,8 @@ class LocalDatabaseFactory {
       await db.transaction((txn) async {
         await txn.execute(
           """ALTER TABLE ${BooksTable.tableName} ADD COLUMN ${BooksTable.folderId} INTEGER 
-          REFERENCES ${FoldersTable.tableName}(${FoldersTable.id})""",
+               REFERENCES ${FoldersTable.tableName}(${FoldersTable.id})
+                  ON DELETE CASCADE""",
         );
         await txn.execute(
           "CREATE UNIQUE INDEX uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
@@ -157,5 +158,6 @@ class LocalDatabaseFactory {
 
   Future<void> _configureDb(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
+    await db.execute('PRAGMA recursive_triggers = ON');
   }
 }

@@ -5,6 +5,7 @@ import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_cont
 import 'package:alisbae/data/datasource/folder_datasource/sqflite_folder_datasource_impl.dart';
 import 'package:alisbae/data/factory/local_database_factory.dart';
 import 'package:alisbae/data/model/book_store.dart';
+import 'package:alisbae/data/model/folder_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
@@ -80,12 +81,14 @@ class CompositionRoot {
     required bool isDownloaded,
     required BookSearchResult? searchResult,
     required BookStore? bookStore,
+    FolderStore? currentFolder,
   }) {
     final bookViewModel = BookViewModel(
       _homeViewModel,
       isDownloaded: isDownloaded,
       bookSearchResult: searchResult,
       bookStore: bookStore,
+      currentFolder: currentFolder,
     );
     return MultiBlocProvider(
       providers: [

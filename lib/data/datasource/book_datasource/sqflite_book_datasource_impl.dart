@@ -160,7 +160,9 @@ class SqfliteBookDatasourceImpl implements IBookDataSource {
   Future<List<BookStore>> getFolderBooks(int? folderId) async {
     final bookMaps = await _db.query(
       BooksTable.tableName,
-      where: folderId != null ? "${BooksTable.folderId} = ?" : null,
+      where: folderId != null
+          ? "${BooksTable.folderId} = ?"
+          : "${BooksTable.folderId} IS NULL",
       whereArgs: folderId != null ? [folderId] : null,
     );
     return bookMaps.map((bookMap) => BookStore.fromJSON(bookMap)).toList();

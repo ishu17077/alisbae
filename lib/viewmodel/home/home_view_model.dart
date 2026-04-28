@@ -10,7 +10,7 @@ import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-part '../book_details/book_view_model.dart';
+part '../book/book_view_model.dart';
 
 class HomeViewModel {
   final IBookDataSource _bookDataSource;
@@ -98,6 +98,10 @@ class HomeViewModel {
   Future<FolderStore> createNewFolder(FolderStore folderStore) async {
     int id = await _folderDatasource.addFolder(folderStore);
     return FolderStore.fromJSON({...folderStore.toJSON(), "id": id});
+  }
+
+  Future<FolderStore?> getFolder(int id) async {
+    return _folderDatasource.getFolder(id);
   }
 
   Future<void> deleteFolder(int id) async {

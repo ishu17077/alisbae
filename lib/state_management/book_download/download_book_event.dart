@@ -24,7 +24,7 @@ class DownloadBookDelete extends DownloadBookEvent {
 }
 
 class DownloadBookStart extends DownloadBookEvent {
-
+  
 
   const DownloadBookStart();
   @override

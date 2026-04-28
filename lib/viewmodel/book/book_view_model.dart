@@ -4,6 +4,7 @@ class BookViewModel {
   HomeViewModel homeViewModel;
   BookSearchResult? bookSearchResult;
   BookDetails? bookDetails;
+  FolderStore? currentFolder;
   bool isDownloaded;
   BookStore? bookStore;
   BookViewModel(
@@ -11,6 +12,7 @@ class BookViewModel {
     required this.isDownloaded,
     required this.bookStore,
     required this.bookSearchResult,
+    this.currentFolder,
   }) {
     assert(
       isDownloaded ? bookStore != null : bookSearchResult != null,
@@ -86,6 +88,7 @@ class BookViewModel {
         rating: null,
         review: null,
         imagePath: imagePath,
+        folderId: currentFolder?.id,
       );
       final id = await homeViewModel._bookDataSource.addBook(book);
       final bookReturn = BookStore.fromJSON({...book.toJSON(), "id": id});

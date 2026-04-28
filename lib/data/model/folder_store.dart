@@ -33,10 +33,10 @@ class FolderStore {
   factory FolderStore.fromJSON(Map<String, dynamic> map) {
     final folderStore = FolderStore(
       name: map[FoldersTable.name],
-      color:
-          (map[FoldersTable.color] as String?) != null ||
-              (map[FoldersTable.color]! as String).isNotEmpty
-          ? ColorToHex.fromHex(map[FoldersTable.color] as String)
+      color: (map[FoldersTable.color] as String?) != null
+          ? (map[FoldersTable.color] as String).isNotEmpty
+                ? ColorToHex.fromHex(map[FoldersTable.color] as String)
+                : null
           : null,
       parentFolderId: map[FoldersTable.parentFolderId] as int?,
     );

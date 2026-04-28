@@ -33,14 +33,18 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
       }
 
       emit(DownloadBookState.success(result));
-      await _bookDownloadsCubit.getBooks();
+      await _bookDownloadsCubit.getBooks(
+        folderId: bookViewModel.currentFolder?.id,
+      );
     });
 
     on<DownloadBookDelete>((event, emit) async {
       await bookViewModel.homeViewModel.deleteBook(event.id);
 
       emit(DeleteSuccess());
-      await _bookDownloadsCubit.getBooks();
+      await _bookDownloadsCubit.getBooks(
+        folderId: bookViewModel.currentFolder?.id,
+      );
     });
   }
 }

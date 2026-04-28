@@ -28,11 +28,11 @@ class FolderManagementBloc
         );
 
         await _folderCubit.getFolders(
-          parentFolderId: event.folder.parentFolderId,
+          parentFolderId: folderStore.parentFolderId,
         );
 
         await _bookDownloadsCubit.getBooks(
-          folderId: event.folder.parentFolderId,
+          folderId: folderStore.parentFolderId,
         );
 
         emit(FolderAddSuccess(folderStore));

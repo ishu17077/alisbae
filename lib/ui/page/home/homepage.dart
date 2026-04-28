@@ -9,6 +9,7 @@ import 'package:alisbae/state_management/home/folder_cubit.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -53,86 +54,156 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      appBar: AppBar(title: Text("Search books :)")),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: CustomScrollView(
-          physics: BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _buildTextField()),
-            _buildSliverSearchResults(),
-            SliverToBoxAdapter(child: SizedBox(height: 20)),
-            SliverAppBar(
-              leading: BackButton(
-                onPressed: () {
-                  Navigator.pop(context);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          return;
+        }
+        _handleBackNavigation();
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text("Search books :)")),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: CustomScrollView(
+            physics: BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: _buildTextField()),
+              _buildSliverSearchResults(),
+              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              SliverAppBar(
+                leading: currentFolder != null
+                    ? BackButton(
+                        onPressed: () async {
+                          await _handleBackNavigation();
+                        },
+                      )
+                    : SizedBox(),
+
+                title: currentFolder?.name != null
+                    ? Text(
+                        currentFolder!.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: currentFolder?.color),
+                      )
+                    : SizedBox(),
+                actions: [
+                  currentFolder != null
+                      ? IconButton(
+                          onPressed: () {
+                            _folderManagementBloc.add(
+                              FolderManagementEvent.deleteFolder(
+                                currentFolder!,
+                              ),
+                            );
+                            _handleBackNavigation();
+                          },
+                          icon: Icon(Icons.remove_circle, color: Colors.red),
+                        )
+                      : SizedBox(),
+                  IconButton(
+                    onPressed: () {
+                      _buildFolderAddAlertDialog(
+                        (folderStore) => _folderManagementBloc.add(
+                          FolderManagementEvent.addFolder(folderStore),
+                        ),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.add_circle_outline_outlined,
+                      color: Colors.teal,
+                    ),
+                  ),
+                ],
+              ),
+              BlocBuilder<FolderCubit, List<FolderStore>>(
+                builder: (context, folders) {
+                  if (folders.isEmpty) {
+                    return SliverToBoxAdapter(child: SizedBox());
+                  }
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsetsGeometry.only(left: 7),
+                      child: Text(
+                        "Folders",
+                        textScaler: TextScaler.linear(2),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
                 },
               ),
+              BlocBuilder<FolderCubit, List<FolderStore>>(
+                builder: (context, folders) {
+                  if (folders.isEmpty) {
+                    return SliverToBoxAdapter(child: SizedBox());
+                  }
 
-              title: currentFolder?.name != null
-                  ? Text(currentFolder!.name)
-                  : SizedBox(),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    _buildFolderAddAlertDialog();
-                  },
-                  icon: Icon(
-                    Icons.add_circle_outline_outlined,
-                    color: Colors.teal,
-                  ),
-                ),
-              ],
-            ),
-            BlocBuilder<FolderCubit, List<FolderStore>>(
-              builder: (context, folders) {
-                if (folders.isEmpty) {
-                  return SliverToBoxAdapter(child: SizedBox());
-                }
-
-                return SliverGrid.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemBuilder: (context, index) {
-                    return _buildFolderCard(folders[index]);
-                  },
-                );
-              },
-            ),
-
-            BlocConsumer<BookDownloadsCubit, List<BookStore>>(
-              listener: (context, bookStores) {
-                if (bookStores.isNotEmpty) {
-                  _warmUpImages(
-                    bookStores.map((book) => book.imageUrl).whereType<String>(),
+                  return SliverGrid.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 5,
+                      crossAxisSpacing: 5,
+                    ),
+                    itemBuilder: (context, index) {
+                      return _buildFolderCard(folders[index]);
+                    },
+                    itemCount: folders.length,
                   );
-                }
-              },
-              builder: (context, downloadedBooks) {
-                if (downloadedBooks.isEmpty) {
-                  return SliverToBoxAdapter(child: SizedBox());
-                }
-                return SliverGrid.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: downloadedBooks.length,
-                  itemBuilder: (context, index) {
-                    return _buildBookCard(downloadedBooks[index], index);
-                  },
-                );
-              },
-            ),
-          ],
+                },
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              BlocConsumer<BookDownloadsCubit, List<BookStore>>(
+                listener: (context, bookStores) {
+                  if (bookStores.isNotEmpty) {
+                    _warmUpImages(
+                      bookStores
+                          .map((book) => book.imageUrl)
+                          .whereType<String>(),
+                    );
+                  }
+                },
+                builder: (context, downloadedBooks) {
+                  if (downloadedBooks.isEmpty) {
+                    return SliverToBoxAdapter(child: SizedBox());
+                  }
+                  return SliverGrid.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                    ),
+                    itemCount: downloadedBooks.length,
+                    itemBuilder: (context, index) {
+                      return _buildBookCard(downloadedBooks[index], index);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleBackNavigation() async {
+    if (currentFolder == null) {
+      SystemNavigator.pop();
+    }
+    _bookDownloadsCubit.getBooks(folderId: currentFolder?.parentFolderId);
+    _folderCubit.getFolders(parentFolderId: currentFolder?.parentFolderId);
+    if (currentFolder?.parentFolderId != null) {
+      currentFolder = await _folderCubit.homeViewModel.getFolder(
+        currentFolder!.parentFolderId!,
+      );
+      setState(() {});
+    } else {
+      setState(() {
+        currentFolder = null;
+      });
+    }
   }
 
   TextField _buildTextField() {
@@ -162,7 +233,9 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Future<FolderStore> _buildFolderAddAlertDialog() async {
+  void _buildFolderAddAlertDialog(
+    Function(FolderStore folderStore) onFolderSaveClick,
+  ) async {
     final folderStore = FolderStore(
       name: '',
       parentFolderId: currentFolder?.id,
@@ -171,71 +244,95 @@ class _HomePageState extends State<HomePage>
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Column(
-                children: [
-                  TextField(
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        folderStore.name = value;
-                      }
-                    },
+        return AlertDialog(
+          title: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Add Folder"),
+              SizedBox(height: 20),
+              TextField(
+                decoration: InputDecoration(
+                  hint: Text("Folder Name", textScaler: TextScaler.linear(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
-
-                  _buildColorRow(
-                    (Color color) => folderStore.color = color,
-                    setState,
-                  ),
-                ],
+                ),
+                onChanged: (value) {
+                  if (value.isNotEmpty) {
+                    folderStore.name = value;
+                  }
+                },
               ),
-            );
-          },
+              SizedBox(height: 5),
+              _buildColorRow((Color color) {
+                folderStore.color = color;
+              }),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (folderStore.name.isNotEmpty) {
+                  onFolderSaveClick(folderStore);
+                  Navigator.pop(context);
+                }
+              },
+              child: Text("Add"),
+            ),
+          ],
         );
       },
     );
-    return folderStore;
   }
 
-  GridView _buildColorRow(
-    Function(Color color) colorActionCallback,
-    StateSetter setState,
-  ) {
+  Widget _buildColorRow(Function(Color color) onColorSelected) {
     final colors = [
       Colors.red,
       Colors.blue,
-      Colors.white,
+      Colors.purpleAccent,
       Colors.pink,
       Colors.cyan,
       Colors.teal,
     ];
     int selectedIndex = -1;
-    return GridView.builder(
-      shrinkWrap: true,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 6,
-      ),
-      itemBuilder: (context, index) {
-        return IconButton(
-          onPressed: () {
-            setState(() {
-              selectedIndex = index;
-            });
-            colorActionCallback(colors[index]);
-          },
-          icon: selectedIndex == index
-              ? Icon(Icons.check_circle, color: colors[index])
-              : Icon(Icons.circle, color: colors[index]),
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < colors.length; i++)
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedIndex = i;
+                    });
+                    onColorSelected(colors[i]);
+                  },
+                  icon: selectedIndex == i
+                      ? Icon(Icons.check_circle, color: colors[i])
+                      : Icon(Icons.circle, color: colors[i]),
+                ),
+            ],
+          ),
         );
       },
-      itemCount: colors.length,
     );
   }
 
   Widget _buildFolderCard(FolderStore folder) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        _handleForwardNavigation(folder);
+      },
       child: Card(
         elevation: 10.0,
         child: Padding(
@@ -245,12 +342,25 @@ class _HomePageState extends State<HomePage>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(Icons.folder_open_outlined, color: folder.color),
-              Text(folder.name),
+              SizedBox(
+                width: 100,
+                child: Center(
+                  child: Text(folder.name, overflow: TextOverflow.ellipsis),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleForwardNavigation(FolderStore folder) {
+    _folderCubit.getFolders(parentFolderId: folder.id);
+    _bookDownloadsCubit.getBooks(folderId: folder.id);
+    setState(() {
+      currentFolder = folder;
+    });
   }
 
   Widget _buildBookCard(BookStore bookStore, int index) {
@@ -459,6 +569,7 @@ class _HomePageState extends State<HomePage>
                     bookStore: null,
                     isDownloaded: false,
                     searchResult: searchResult,
+                    currentFolder: currentFolder,
                   );
                 },
                 leading: ClipRRect(
