@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/data/model/folder_store.dart';
 import 'package:alisbae/model/search_result.dart';
+import 'package:alisbae/state_management/folder_management/folder_management_bloc.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/state_management/home/folder_cubit.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
@@ -24,11 +25,14 @@ class _HomePageState extends State<HomePage>
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
+  FolderStore? currentFolder;
   late final FolderCubit _folderCubit;
+  late final FolderManagementBloc _folderManagementBloc;
   final Set<String> _warmedImageUrls = <String>{};
   bool isLoading = false;
   @override
   void initState() {
+    _folderManagementBloc = context.read<FolderManagementBloc>();
     _folderCubit = context.read<FolderCubit>();
     _searchCubit = context.read<BookSearchCubit>();
     _bookDownloadsCubit = context.read<BookDownloadsCubit>();
@@ -59,6 +63,28 @@ class _HomePageState extends State<HomePage>
             SliverToBoxAdapter(child: _buildTextField()),
             _buildSliverSearchResults(),
             SliverToBoxAdapter(child: SizedBox(height: 20)),
+            SliverAppBar(
+              leading: BackButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+
+              title: currentFolder?.name != null
+                  ? Text(currentFolder!.name)
+                  : SizedBox(),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    _buildFolderAddAlertDialog();
+                  },
+                  icon: Icon(
+                    Icons.add_circle_outline_outlined,
+                    color: Colors.teal,
+                  ),
+                ),
+              ],
+            ),
             BlocBuilder<FolderCubit, List<FolderStore>>(
               builder: (context, folders) {
                 if (folders.isEmpty) {
@@ -133,6 +159,77 @@ class _HomePageState extends State<HomePage>
           });
         });
       },
+    );
+  }
+
+  Future<FolderStore> _buildFolderAddAlertDialog() async {
+    final folderStore = FolderStore(
+      name: '',
+      parentFolderId: currentFolder?.id,
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Column(
+                children: [
+                  TextField(
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        folderStore.name = value;
+                      }
+                    },
+                  ),
+
+                  _buildColorRow(
+                    (Color color) => folderStore.color = color,
+                    setState,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    return folderStore;
+  }
+
+  GridView _buildColorRow(
+    Function(Color color) colorActionCallback,
+    StateSetter setState,
+  ) {
+    final colors = [
+      Colors.red,
+      Colors.blue,
+      Colors.white,
+      Colors.pink,
+      Colors.cyan,
+      Colors.teal,
+    ];
+    int selectedIndex = -1;
+    return GridView.builder(
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 6,
+      ),
+      itemBuilder: (context, index) {
+        return IconButton(
+          onPressed: () {
+            setState(() {
+              selectedIndex = index;
+            });
+            colorActionCallback(colors[index]);
+          },
+          icon: selectedIndex == index
+              ? Icon(Icons.check_circle, color: colors[index])
+              : Icon(Icons.circle, color: colors[index]),
+        );
+      },
+      itemCount: colors.length,
     );
   }
 
