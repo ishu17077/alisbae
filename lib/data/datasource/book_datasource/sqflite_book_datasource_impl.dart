@@ -147,8 +147,13 @@ class SqfliteBookDatasourceImpl implements IBookDataSource {
   }
 
   @override
-  Future<void> setFolder({required int? folderId}) async {
-    await _db.update(BooksTable.tableName, {BooksTable.folderId: folderId});
+  Future<void> setFolder({required int bookId, required int? folderId}) async {
+    await _db.update(
+      BooksTable.tableName,
+      {BooksTable.folderId: folderId},
+      where: "${BooksTable.id} = ?",
+      whereArgs: [bookId],
+    );
   }
 
   @override

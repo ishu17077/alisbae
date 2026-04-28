@@ -24,15 +24,27 @@ class _HomePageState extends State<HomePage>
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
+  late final FolderCubit _folderCubit;
   final Set<String> _warmedImageUrls = <String>{};
   bool isLoading = false;
   @override
   void initState() {
+    _folderCubit = context.read<FolderCubit>();
     _searchCubit = context.read<BookSearchCubit>();
     _bookDownloadsCubit = context.read<BookDownloadsCubit>();
     _bookDownloadsCubit.getBooks();
+    _folderCubit.getFolders();
     super.initState();
   }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +72,7 @@ class _HomePageState extends State<HomePage>
                     crossAxisSpacing: 10,
                   ),
                   itemBuilder: (context, index) {
-                    return SliverToBoxAdapter(child: SizedBox());
+                    return _buildFolderCard(folders[index]);
                   },
                 );
               },
@@ -131,7 +143,14 @@ class _HomePageState extends State<HomePage>
         elevation: 10.0,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-          
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.folder_open_outlined, color: folder.color),
+              Text(folder.name),
+            ],
+          ),
         ),
       ),
     );
@@ -250,15 +269,6 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  bool get wantKeepAlive => true;
 
   void _warmUpImages(Iterable<String> pathOrUrls, {bool onDevice = false}) {
     for (var pathOrUrl in pathOrUrls) {

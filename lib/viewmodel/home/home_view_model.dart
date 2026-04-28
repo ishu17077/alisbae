@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:isolate';
-
 import 'package:alisbae/data/datasource/book_datasource/book_datasource_contract.dart';
 import 'package:alisbae/data/datasource/folder_datasource/folder_datasource_contract.dart';
 import 'package:alisbae/data/model/book_store.dart';
@@ -96,6 +95,15 @@ class HomeViewModel {
     }
   }
 
+  Future<FolderStore> createNewFolder(FolderStore folderStore) async {
+    int id = await _folderDatasource.addFolder(folderStore);
+    return FolderStore.fromJSON({...folderStore.toJSON(), "id": id});
+  }
+
+  Future<void> deleteFolder(int id) async {
+    await _folderDatasource.deleteFolder(id);
+  }
+
   static List<BookStore> _filterUnsavedBooks(List<BookStore> books) {
     return books
         .where(
@@ -105,6 +113,13 @@ class HomeViewModel {
               book.description == null,
         )
         .toList();
+  }
+
+  Future<void> bookFolderChange({
+    required int bookId,
+    required int? folderId,
+  }) async {
+    _bookDataSource.setFolder(bookId: bookId, folderId: folderId);
   }
 
   Future<void> updateLikeStatus({

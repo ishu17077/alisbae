@@ -10,6 +10,7 @@ import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
+import 'package:alisbae/state_management/folder_management/folder_management_bloc.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/state_management/home/folder_cubit.dart';
 import 'package:alisbae/ui/page/book_details/book_details_page.dart';
@@ -63,6 +64,10 @@ class CompositionRoot {
   static Widget composeHomeUi() {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (context) =>
+              FolderManagementBloc(_folderCubit, _bookDownloadsCubit),
+        ),
         BlocProvider(create: (context) => _folderCubit),
         BlocProvider(create: (context) => _bookSearchCubit),
         BlocProvider(create: (context) => _bookDownloadsCubit),

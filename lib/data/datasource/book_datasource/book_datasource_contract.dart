@@ -19,6 +19,6 @@ abstract interface class IBookDataSource {
   Future<void> setImagePath(int id, String path);
   Future<void> setImageUrl(int id, String imageUrl);
   Future<void> setRatingandReview(int id, int? rating, String? review);
-  Future<void> setFolder({required int? folderId});
+  Future<void> setFolder({required int bookId, required int? folderId});
   Future<void> setDescription(int id, String description);
 }
