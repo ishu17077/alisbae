@@ -14,7 +14,7 @@ class SqfliteFolderDatasourceImpl implements IFolderDatasource {
       int id = await _db.insert(
         FoldersTable.tableName,
         folder.toJSON(),
-        conflictAlgorithm: ConflictAlgorithm.rollback,
+        conflictAlgorithm: ConflictAlgorithm.abort,
       );
       return id;
     } on DatabaseException catch (e) {

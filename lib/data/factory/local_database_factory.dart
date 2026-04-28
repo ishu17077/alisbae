@@ -72,11 +72,11 @@ class LocalDatabaseFactory {
                   ON DELETE CASCADE""",
         );
         await txn.execute(
-          "CREATE UNIQUE INDEX uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+          "CREATE UNIQUE INDEX INDEX IF NOT EXISTS uidx_books_folder ON ${BooksTable.tableName} (${BooksTable.bookName}, IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
         );
 
         await txn.execute(
-          "CREATE UNIQUE INDEX uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1), ${FoldersTable.name})",
+          "CREATE UNIQUE INDEX INDEX IF NOT EXISTS uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1), ${FoldersTable.name})",
         );
       });
     }
@@ -140,16 +140,18 @@ class LocalDatabaseFactory {
       final batch = db.batch();
       //! Essencial indices to prevent data conflicts
       batch.execute(
-        "CREATE UNIQUE INDEX uidx_books ON ${BooksTable.tableName} (${BooksTable.bookName}, ${BooksTable.author})",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uidx_books ON ${BooksTable.tableName} (${BooksTable.bookName}, ${BooksTable.author})",
       );
 
       batch.execute(
-        "CREATE UNIQUE INDEX uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uidx_books_folder ON ${BooksTable.tableName} (IFNULL(${BooksTable.bookName},'LABADABA BOOK'), IFNULL(${BooksTable.author},'LABADABA AUTHOR'), IFNULL(${BooksTable.folderId}, -1))",
       );
 
       batch.execute(
-        "CREATE UNIQUE INDEX uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (IFNULL(${FoldersTable.parentFolderId}, -1), ${FoldersTable.name})",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uidx_folders_name_parent_folder_id ON ${FoldersTable.tableName} (${FoldersTable.name}, IFNULL(${FoldersTable.parentFolderId}, -1))",
       );
+
+      await batch.commit(noResult: true);
       //TODO: Non essential queries to improve performance
     } catch (e) {
       debugPrint("Indices creation failed $e");
@@ -158,6 +160,6 @@ class LocalDatabaseFactory {
 
   Future<void> _configureDb(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    await db.execute('PRAGMA recursive_triggers = ON');
+    // await db.execute('PRAGMA recursive_triggers = ON');
   }
 }
