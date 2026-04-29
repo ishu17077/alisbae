@@ -150,19 +150,19 @@ class _BookViewerState extends State<BookViewer> {
                   enableHyperlinkNavigation: true,
                   controller: _pdfViewerController,
                   onTap: (details) {
-                    if (cancelableOperation != null &&
-                        !cancelableOperation!.isCanceled) {
-                      cancelableOperation!.cancel();
-                    }
+                    cancelableOperation?.cancel();
+
                     setState(() {
                       _showToolbar = true;
                     });
 
                     cancelableOperation = CancelableOperation.fromFuture(
-                      Future.delayed(const Duration(seconds: 5)).then((_) {
-                        setState(() {
-                          _showToolbar = false;
-                        });
+                      Future.delayed(const Duration(seconds: 8)).then((_) {
+                        if (mounted) {
+                          setState(() {
+                            _showToolbar = false;
+                          });
+                        }
                       }),
                     );
                   },
@@ -186,7 +186,7 @@ class _BookViewerState extends State<BookViewer> {
       padding: EdgeInsetsGeometry.symmetric(vertical: 10),
       child: ClipRRect(
         child: AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
+          duration: Duration(milliseconds: 600),
           transitionBuilder: (child, animation) {
             final offsetAnimation = Tween<Offset>(
               begin: const Offset(0.0, -1.0),

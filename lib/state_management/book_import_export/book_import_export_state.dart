@@ -18,6 +18,8 @@ final class BookSelected extends BookImportExportState {
   List<Object?> get props => [pdf];
 }
 
+// final class BookUnselect extends BookImportExportState {}
+
 final class BookExportSuccess extends BookImportExportState {}
 
 final class BookImportSuccess extends BookImportExportState {

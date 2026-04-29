@@ -12,6 +12,7 @@ import 'package:alisbae/service/pdf_file/pdf_file.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
+import 'package:alisbae/state_management/book_import_export/book_import_export_cubit.dart';
 import 'package:alisbae/state_management/folder_management/folder_management_bloc.dart';
 import 'package:alisbae/state_management/home/book_downloads_cubit.dart';
 import 'package:alisbae/state_management/home/folder_cubit.dart';
@@ -21,6 +22,7 @@ import 'package:alisbae/ui/page/home/home_router.dart';
 import 'package:alisbae/ui/page/home/homepage.dart';
 import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
 import 'package:alisbae/state_management/home/search_cubit.dart';
+import 'package:alisbae/ui/page/import_export_book/import_book.dart';
 import 'package:alisbae/viewmodel/home/home_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,6 +60,7 @@ class CompositionRoot {
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,
       showBookViewerUi: showBookViewerUi,
+      showImportBookUi: showBookImportUi,
     );
     _folderCubit = FolderCubit(_homeViewModel);
     _bookDownloadsCubit = BookDownloadsCubit(_homeViewModel);
@@ -117,6 +120,13 @@ class CompositionRoot {
     return BlocProvider(
       create: (context) => BookBloc(bookViewModel, _bookDownloadsCubit),
       child: BookViewer(bookStore: bookStore),
+    );
+  }
+
+  static Widget showBookImportUi() {
+    return BlocProvider(
+      create: (context) => BookImportExportCubit(_bookDownloadsCubit),
+      child: ImportBook(),
     );
   }
 }

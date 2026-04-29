@@ -13,6 +13,10 @@ abstract class IHomeRouter {
   });
 
   Future<T?> onShowBookViewerUi<T>(BuildContext context, BookStore bookStore);
+
+  Future<T?> onShowImportBookUi<T>(BuildContext context);
+
+  
 }
 
 final class HomeRouter implements IHomeRouter {
@@ -24,7 +28,12 @@ final class HomeRouter implements IHomeRouter {
   })
   showBookDetailsUi;
   final Widget Function(BookStore bookStore) showBookViewerUi;
-  HomeRouter({required this.showBookDetailsUi, required this.showBookViewerUi});
+  final Widget Function() showImportBookUi;
+  HomeRouter({
+    required this.showBookDetailsUi,
+    required this.showBookViewerUi,
+    required this.showImportBookUi,
+  });
 
   @override
   Future<T?> onShowBookDetailsUi<T>(
@@ -52,6 +61,14 @@ final class HomeRouter implements IHomeRouter {
     return Navigator.push<T>(
       context,
       MaterialPageRoute(builder: (context) => showBookViewerUi(bookStore)),
+    );
+  }
+
+  @override
+  Future<T?> onShowImportBookUi<T>(BuildContext context) {
+    return Navigator.push<T>(
+      context,
+      MaterialPageRoute(builder: (context) => showImportBookUi()),
     );
   }
 }

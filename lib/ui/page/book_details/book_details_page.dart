@@ -158,7 +158,21 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                   }
                 },
               ),
-              SizedBox(height: 100),
+              SizedBox(height: 20),
+              BlocBuilder<BookDetailsCubit, BookDetailsState>(
+                builder: (context, state) {
+                  if (state is BookFoundLocally) {
+                    return _buildExportButton(
+                      onTap: () {
+                        _downloadBooksBloc.bookViewModel.homeViewModel
+                            .exportBook(bookStore: state.bookStore);
+                      },
+                    );
+                  }
+                  return SizedBox();
+                },
+              ),
+              SizedBox(height: 130),
             ],
           ),
         ),
@@ -280,6 +294,49 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         }
         return SizedBox();
       },
+    );
+  }
+
+  Widget _buildExportButton({required VoidCallback onTap}) {
+    return Align(
+      alignment: Alignment.center,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color.fromARGB(255, 97, 13, 233),
+                Color.fromARGB(255, 5, 37, 126),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.download_for_offline_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Export Book",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

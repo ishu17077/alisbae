@@ -186,6 +186,7 @@ class HomeViewModel {
       bookPath: saveFile.path,
       imageUrl: null,
       addedOn: DateTime.now(),
+      folderId: currentFolder?.id,
     );
     int bookStoreId = await _bookDataSource.addBook(bookStore);
     return BookStore.fromJSON({...bookStore.toJSON(), "id": bookStoreId});

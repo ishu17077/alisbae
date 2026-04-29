@@ -29,7 +29,6 @@ class BookImportExportCubit extends Cubit<BookImportExportState> {
     Pdf pdf, {
     required String bookName,
     required String author,
-    int? folderId,
   }) async {
     try {
       final bookStore = await _bookDownloadsCubit.homeViewModel.importBook(
@@ -37,7 +36,9 @@ class BookImportExportCubit extends Cubit<BookImportExportState> {
         author: author,
         pdf: pdf,
       );
-      _bookDownloadsCubit.getBooks(folderId: folderId);
+      _bookDownloadsCubit.getBooks(
+        folderId: _bookDownloadsCubit.homeViewModel.currentFolder?.id,
+      );
       emit(BookImportSuccess(bookStore));
     } catch (e) {
       Fluttertoast.showToast(msg: "Book Import failed, please try again.");

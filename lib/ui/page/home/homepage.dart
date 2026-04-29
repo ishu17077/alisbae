@@ -64,7 +64,41 @@ class _HomePageState extends State<HomePage>
         _handleBackNavigation();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Search books :)")),
+        appBar: AppBar(
+          title: Text("Search books :)"),
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                widget._router.onShowImportBookUi(context);
+              },
+
+              style: ButtonStyle(
+                elevation: WidgetStatePropertyAll(3.0),
+                padding: WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                ),
+                side: WidgetStatePropertyAll(
+                  BorderSide(
+                    color: Colors.blue,
+                    style: BorderStyle.solid,
+                    width: 3.2,
+                  ),
+                ),
+              ),
+
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Import Book", style: TextStyle(color: Colors.blue)),
+                  SizedBox(width: 5),
+                  Icon(Icons.add_circle_outline, color: Colors.blue),
+                ],
+              ),
+            ),
+            SizedBox(width: 10),
+          ],
+        ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: CustomScrollView(
@@ -240,30 +274,34 @@ class _HomePageState extends State<HomePage>
     });
   }
 
-  TextField _buildTextField() {
-    return TextField(
-      controller: searchController,
-      autofocus: false,
-      decoration: InputDecoration(
-        label: Text("What thy must demand?"),
-        hint: Text("Procced!"),
-      ),
-      onChanged: (val) async {
-        val = val.trim();
-        if (val == "") {
-          setState(() {});
-          return;
-        }
+  Widget _buildTextField() {
+    return Padding(
+      padding: EdgeInsetsGeometry.only(top: 5),
+      child: TextField(
+        controller: searchController,
+        autofocus: false,
+        decoration: InputDecoration(
+          label: Text("What thy must demand?"),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          hint: Text("Procced!"),
+        ),
+        onChanged: (val) async {
+          val = val.trim();
+          if (val == "") {
+            setState(() {});
+            return;
+          }
 
-        setState(() {
-          isLoading = true;
-        });
-        _searchCubit.results(val).then((_) {
           setState(() {
-            isLoading = false;
+            isLoading = true;
           });
-        });
-      },
+          _searchCubit.results(val).then((_) {
+            setState(() {
+              isLoading = false;
+            });
+          });
+        },
+      ),
     );
   }
 
