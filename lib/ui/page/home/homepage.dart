@@ -474,7 +474,12 @@ class _HomePageState extends State<HomePage>
                           await _bookDownloadsCubit.homeViewModel.deleteBook(
                             bookStore.id,
                           );
-                          _bookDownloadsCubit.getBooks();
+                          _bookDownloadsCubit.getBooks(
+                            folderId: _bookDownloadsCubit
+                                .homeViewModel
+                                .currentFolder
+                                ?.id,
+                          );
                         }
                       });
                     },

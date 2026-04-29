@@ -93,7 +93,7 @@ class CompositionRoot {
       isDownloaded: isDownloaded,
       bookSearchResult: searchResult,
       bookStore: bookStore,
-      currentFolder: currentFolder,
+      bookFolder: currentFolder,
     );
     return MultiBlocProvider(
       providers: [

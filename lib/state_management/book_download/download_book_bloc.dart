@@ -34,7 +34,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
 
       emit(DownloadBookState.success(result));
       await _bookDownloadsCubit.getBooks(
-        folderId: bookViewModel.currentFolder?.id,
+        folderId: bookViewModel.bookFolder?.id ?? _bookDownloadsCubit.homeViewModel.currentFolder?.id,
       );
     });
 
@@ -43,7 +43,7 @@ class DownloadBooksBloc extends Bloc<DownloadBookEvent, DownloadBookState> {
 
       emit(DeleteSuccess());
       await _bookDownloadsCubit.getBooks(
-        folderId: bookViewModel.currentFolder?.id,
+        folderId: bookViewModel.bookFolder?.id ?? _bookDownloadsCubit.homeViewModel.currentFolder?.id,
       );
     });
   }
