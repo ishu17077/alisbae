@@ -8,7 +8,9 @@ import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
+import 'package:alisbae/service/pdf_file/pdf_file.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path/path.dart';
 
 part '../book/book_view_model.dart';
 
@@ -17,6 +19,7 @@ class HomeViewModel {
   final IFolderDatasource _folderDatasource;
   final DataCrawler _dataCrawler;
   final ImageSaver _imageSaver;
+  final PdfFile _pdfFile;
   List<BookStore> books = [];
 
   HomeViewModel(
@@ -24,6 +27,7 @@ class HomeViewModel {
     this._folderDatasource,
     this._dataCrawler,
     this._imageSaver,
+    this._pdfFile,
   );
 
   Future<List<BookSearchResult>> searchBooksOnline(String searchParam) async {
@@ -139,5 +143,39 @@ class HomeViewModel {
     book.isFavorite = isLiked;
 
     await _bookDataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
+  }
+
+  Future<Pdf?> selectBook() async {
+    final pdf = await _pdfFile.importBook();
+    return pdf;
+  }
+
+  Future<BookStore> importBook({
+    required String bookName,
+    required String author,
+    required Pdf pdf,
+  }) async {
+    File saveFile = await _dataCrawler.saveBook(
+      file: pdf.file,
+      bookName: bookName,
+    );
+    BookStore bookStore = BookStore(
+      name: bookName,
+      author: author,
+      bookPath: saveFile.path,
+      imageUrl: null,
+      addedOn: DateTime.now(),
+    );
+    int bookStoreId = await _bookDataSource.addBook(bookStore);
+    return BookStore.fromJSON({...bookStore.toJSON(), "id": bookStoreId});
+  }
+
+  Future<void> exportBook({required BookStore bookStore}) async {
+    File file = File(bookStore.bookPath);
+    if (await file.exists()) {
+      await _pdfFile.exportBook(Pdf(basename(bookStore.bookPath), file));
+    } else {
+      throw Exception("File not found");
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:alisbae/service/common/get_file_name.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,13 +13,10 @@ class ImageSaver {
     final uri = Uri.parse(imageUrl);
     http.Response res = await http.get(uri);
 
-    String ext = extension(uri.path);
-    if (ext.isEmpty) {
-      ext = ".jpg";
-    }
-    String saveName = join(
-      _dir.path,
-      "${bookName}_${Random.secure().nextInt(8999999) + 1000000}$ext",
+    String saveName = getSaveName(
+      dir: _dir,
+      bookName: bookName,
+      fileName: uri.path,
     );
 
     File file = File(saveName);

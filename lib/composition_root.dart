@@ -8,6 +8,7 @@ import 'package:alisbae/data/model/book_store.dart';
 import 'package:alisbae/data/model/folder_store.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
+import 'package:alisbae/service/pdf_file/pdf_file.dart';
 import 'package:alisbae/state_management/book/book_bloc.dart';
 import 'package:alisbae/state_management/book_details/book_details_cubit.dart';
 import 'package:alisbae/state_management/book_download/download_book_bloc.dart';
@@ -47,11 +48,13 @@ class CompositionRoot {
     _bookDataSource = SqfliteBookDatasourceImpl(db);
     _folderDatasource = SqfliteFolderDatasourceImpl(db);
     _imageSaver = ImageSaver(imageDir);
+    final _pdfFile = PdfFile();
     _homeViewModel = HomeViewModel(
       _bookDataSource,
       _folderDatasource,
       _dataCrawler,
       _imageSaver,
+      _pdfFile,
     );
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,

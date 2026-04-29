@@ -57,6 +57,7 @@ class BookViewModel {
 
       final filePath = await homeViewModel._dataCrawler.downloadBook(
         fileName: bookDetails!.fileName!,
+        bookName: bookSearchResult!.bookTitle,
         callback: callback,
       );
       if (filePath == null || filePath.isEmpty) {

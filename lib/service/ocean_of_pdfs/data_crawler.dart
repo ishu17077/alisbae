@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:alisbae/data/model/book_store.dart';
+import 'package:alisbae/service/common/get_file_name.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -118,6 +120,7 @@ class DataCrawler {
 
   Future<String?> downloadBook({
     required String fileName,
+    required String bookName,
     void Function(int count, int total)? callback,
   }) async {
     final apiUrl = "https://oceanofpdf.com/Fetching_Resource.php";
@@ -156,7 +159,10 @@ class DataCrawler {
       );
       await headlessWebView.run();
       await pageLoadCompleter.future;
-      var filePath = join(_dir.path, fileName);
+      var filePath = join(
+        _dir.path,
+        getSaveName(dir: _dir, bookName: bookName, fileName: fileName),
+      );
       if (downloadLink == null || downloadLink!.isEmpty) {
         Fluttertoast.showToast(
           msg: "Please contact your personal unpaid developer. Wink.",
@@ -194,5 +200,17 @@ class DataCrawler {
       await file.delete();
       debugPrint("File deleted successfully");
     }
+  }
+
+  Future<File> saveBook({required File file, required String bookName}) async {
+    String saveName = getSaveName(
+      dir: _dir,
+      bookName: bookName,
+      fileName: basename(file.path),
+    );
+
+    String completePath = join(_dir.path, saveName);
+
+    return await file.copy(completePath);
   }
 }
