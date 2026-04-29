@@ -125,28 +125,25 @@ class BookViewModel {
     required DateTime lastRead,
   }) async {
     if (bookStore == null) return;
-    final book = homeViewModel.books.firstWhere(
-      (book) => book.id == bookStore!.id,
-    );
-    book.currentRead = currentRead;
-    book.lastRead = lastRead;
+
+    bookStore!.currentRead = currentRead;
+    bookStore!.lastRead = lastRead;
 
     await homeViewModel._bookDataSource.updateLastRead(
       id: bookStore!.id,
       currentRead: currentRead,
+      lastRead: lastRead,
     );
   }
 
   Future<void> updateRatingandReview({int? rating, String? review}) async {
     if (bookStore == null) return;
-    final book = homeViewModel.books.firstWhere(
-      (book) => book.id == bookStore!.id,
-    );
+
     if (rating != null) {
-      book.rating = rating;
+      bookStore!.rating = rating;
     }
     if (review != null || review!.isNotEmpty) {
-      book.review = review;
+      bookStore!.review = review;
     }
 
     await homeViewModel._bookDataSource.setRatingandReview(

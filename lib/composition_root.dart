@@ -24,7 +24,6 @@ import 'package:alisbae/state_management/home/search_cubit.dart';
 import 'package:alisbae/viewmodel/home/home_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CompositionRoot {
@@ -48,13 +47,13 @@ class CompositionRoot {
     _bookDataSource = SqfliteBookDatasourceImpl(db);
     _folderDatasource = SqfliteFolderDatasourceImpl(db);
     _imageSaver = ImageSaver(imageDir);
-    final _pdfFile = PdfFile();
+    final pdfFile = PdfFile();
     _homeViewModel = HomeViewModel(
       _bookDataSource,
       _folderDatasource,
       _dataCrawler,
       _imageSaver,
-      _pdfFile,
+      pdfFile,
     );
     _homeRouter = HomeRouter(
       showBookDetailsUi: showBookDetailsUi,

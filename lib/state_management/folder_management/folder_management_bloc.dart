@@ -44,7 +44,7 @@ class FolderManagementBloc
 
     on<FolderDeleteEvent>((event, emit) async {
       try {
-        await _folderCubit.homeViewModel.deleteFolder(event.folder.id);
+        await _folderCubit.homeViewModel.deleteFolder(event.folder);
 
         await _folderCubit.getFolders(
           parentFolderId: event.folder.parentFolderId,

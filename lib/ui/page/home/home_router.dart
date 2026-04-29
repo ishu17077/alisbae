@@ -4,7 +4,7 @@ import 'package:alisbae/model/search_result.dart';
 import 'package:flutter/material.dart';
 
 abstract class IHomeRouter {
-  Future<void> onShowBookDetailsUi(
+  Future<T?> onShowBookDetailsUi<T>(
     BuildContext context, {
     required bool isDownloaded,
     required BookStore? bookStore,
@@ -12,7 +12,7 @@ abstract class IHomeRouter {
     FolderStore? currentFolder,
   });
 
-  Future<void> onShowBookViewerUi(BuildContext context, BookStore bookStore);
+  Future<T?> onShowBookViewerUi<T>(BuildContext context, BookStore bookStore);
 }
 
 final class HomeRouter implements IHomeRouter {
@@ -27,14 +27,14 @@ final class HomeRouter implements IHomeRouter {
   HomeRouter({required this.showBookDetailsUi, required this.showBookViewerUi});
 
   @override
-  Future<void> onShowBookDetailsUi(
+  Future<T?> onShowBookDetailsUi<T>(
     BuildContext context, {
     required bool isDownloaded,
     required BookStore? bookStore,
     required BookSearchResult? searchResult,
     FolderStore? currentFolder,
   }) {
-    return Navigator.push(
+    return Navigator.push<T>(
       context,
       MaterialPageRoute(
         builder: (context) => showBookDetailsUi(
@@ -48,8 +48,8 @@ final class HomeRouter implements IHomeRouter {
   }
 
   @override
-  Future<void> onShowBookViewerUi(BuildContext context, BookStore bookStore) {
-    return Navigator.push(
+  Future<T?> onShowBookViewerUi<T>(BuildContext context, BookStore bookStore) {
+    return Navigator.push<T>(
       context,
       MaterialPageRoute(builder: (context) => showBookViewerUi(bookStore)),
     );

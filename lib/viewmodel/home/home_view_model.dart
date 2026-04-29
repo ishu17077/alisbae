@@ -21,6 +21,7 @@ class HomeViewModel {
   final ImageSaver _imageSaver;
   final PdfFile _pdfFile;
   List<BookStore> books = [];
+  FolderStore? currentFolder;
 
   HomeViewModel(
     this._bookDataSource,
@@ -69,7 +70,11 @@ class HomeViewModel {
   }
 
   Future<List<BookStore>> listFolderBooks({int? folderId}) async {
-    return await _bookDataSource.getFolderBooks(folderId);
+    currentFolder = folderId != null
+        ? await _folderDatasource.getFolder(folderId)
+        : null;
+    books = await _bookDataSource.getFolderBooks(folderId);
+    return books;
   }
 
   Future<List<FolderStore>> listFolders({int? parentFolderId}) async {
@@ -104,17 +109,25 @@ class HomeViewModel {
     return FolderStore.fromJSON({...folderStore.toJSON(), "id": id});
   }
 
-  Future<FolderStore?> getFolder(int id) async {
-    return _folderDatasource.getFolder(id);
-  }
+  // Future<FolderStore?> getFolder(int id) async {
+  //   if (id == currentFolder?.id) {
+  //     return currentFolder;
+  //   }
+  //   currentFolder = await _folderDatasource.getFolder(id);
+  //   return currentFolder;
+  // }
 
-  Future<void> deleteFolder(int id) async {
-    final books = await _bookDataSource.getAllFolderBooksRecursively(id);
-
-    await _folderDatasource.deleteFolder(id);
+  Future<void> deleteFolder(FolderStore folderStore) async {
+    final books = await _bookDataSource.getAllFolderBooksRecursively(
+      folderStore.id,
+    );
+    await _folderDatasource.deleteFolder(folderStore.id);
     books.map((book) {
       _dataCrawler.deleteDownload(book.bookPath);
     });
+    currentFolder = folderStore.parentFolderId != null
+        ? await _folderDatasource.getFolder(folderStore.parentFolderId!)
+        : null;
   }
 
   static List<BookStore> _filterUnsavedBooks(List<BookStore> books) {
@@ -138,7 +151,15 @@ class HomeViewModel {
   Future<void> updateLikeStatus({
     required int id,
     required bool isLiked,
+    BookStore? bookStore,
   }) async {
+    if (bookStore != null) {
+      await _bookDataSource.updateFavoriteStatus(
+        id: bookStore.id,
+        isFavorite: isLiked,
+      );
+      return;
+    }
     final book = books.firstWhere((book) => book.id == id);
     book.isFavorite = isLiked;
 

@@ -28,7 +28,6 @@ class _HomePageState extends State<HomePage>
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
-  FolderStore? currentFolder;
   late final FolderCubit _folderCubit;
   late final FolderManagementBloc _folderManagementBloc;
   final Set<String> _warmedImageUrls = <String>{};
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage>
               _buildSliverSearchResults(),
               SliverToBoxAdapter(child: SizedBox(height: 20)),
               SliverAppBar(
-                leading: currentFolder != null
+                leading: _folderCubit.homeViewModel.currentFolder != null
                     ? BackButton(
                         onPressed: () async {
                           await _handleBackNavigation();
@@ -83,25 +82,28 @@ class _HomePageState extends State<HomePage>
                       )
                     : SizedBox(),
 
-                title: currentFolder?.name != null
+                title: _folderCubit.homeViewModel.currentFolder?.name != null
                     ? Text(
-                        currentFolder!.name,
+                        _folderCubit.homeViewModel.currentFolder!.name,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: currentFolder?.color),
+                        style: TextStyle(
+                          color:
+                              _folderCubit.homeViewModel.currentFolder?.color,
+                        ),
                       )
                     : SizedBox(),
                 actions: [
-                  currentFolder != null
+                  _folderCubit.homeViewModel.currentFolder != null
                       ? IconButton(
                           onPressed: () {
                             buildDeleteFolderAlertBox(
                               context,
-                              currentFolder!,
+                              _folderCubit.homeViewModel.currentFolder!,
                             ).then((shouldDelete) {
                               if (shouldDelete) {
                                 _folderManagementBloc.add(
                                   FolderManagementEvent.deleteFolder(
-                                    currentFolder!,
+                                    _folderCubit.homeViewModel.currentFolder!,
                                   ),
                                 );
                                 _handleBackNavigation();
@@ -224,21 +226,18 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _handleBackNavigation() async {
-    if (currentFolder == null) {
+    if (_folderCubit.homeViewModel.currentFolder == null) {
       SystemNavigator.pop();
     }
-    _bookDownloadsCubit.getBooks(folderId: currentFolder?.parentFolderId);
-    _folderCubit.getFolders(parentFolderId: currentFolder?.parentFolderId);
-    if (currentFolder?.parentFolderId != null) {
-      currentFolder = await _folderCubit.homeViewModel.getFolder(
-        currentFolder!.parentFolderId!,
-      );
-      setState(() {});
-    } else {
-      setState(() {
-        currentFolder = null;
-      });
-    }
+    await _bookDownloadsCubit.getBooks(
+      folderId: _folderCubit.homeViewModel.currentFolder?.parentFolderId,
+    );
+    await _folderCubit.getFolders(
+      parentFolderId: _folderCubit.homeViewModel.currentFolder?.parentFolderId,
+    );
+    setState(() {
+      _folderCubit.homeViewModel.currentFolder;
+    });
   }
 
   TextField _buildTextField() {
@@ -273,7 +272,7 @@ class _HomePageState extends State<HomePage>
   ) async {
     final folderStore = FolderStore(
       name: '',
-      parentFolderId: currentFolder?.id,
+      parentFolderId: _folderCubit.homeViewModel.currentFolder?.id,
     );
 
     await showDialog(
@@ -390,11 +389,11 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  void _handleForwardNavigation(FolderStore folder) {
-    _folderCubit.getFolders(parentFolderId: folder.id);
-    _bookDownloadsCubit.getBooks(folderId: folder.id);
+  void _handleForwardNavigation(FolderStore folder) async {
+    await _folderCubit.getFolders(parentFolderId: folder.id);
+    await _bookDownloadsCubit.getBooks(folderId: folder.id);
     setState(() {
-      currentFolder = folder;
+      _folderCubit.homeViewModel.currentFolder;
     });
   }
 
@@ -607,13 +606,17 @@ class _HomePageState extends State<HomePage>
               var searchResult = searchResults[index];
               return ListTile(
                 onTap: () async {
-                  widget._router.onShowBookDetailsUi(
+                  final result = await widget._router.onShowBookDetailsUi(
                     context,
                     bookStore: null,
                     isDownloaded: false,
                     searchResult: searchResult,
-                    currentFolder: currentFolder,
+                    currentFolder: _folderCubit.homeViewModel.currentFolder,
                   );
+                  if (result ?? false) {
+                    searchController.clear();
+                    _searchCubit.results(searchController.text);
+                  }
                 },
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(6),

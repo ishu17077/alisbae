@@ -21,6 +21,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
   late final DownloadBooksBloc _downloadBooksBloc;
   late final BookDetailsCubit _bookDetailsCubit;
   late final BookBloc _bookBloc;
+  bool isDownloaded = false;
 
   @override
   void initState() {
@@ -39,153 +40,164 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Book Info"),
-            BlocBuilder<DownloadBooksBloc, DownloadBookState>(
-              builder: (context, downloadBookState) {
-                if (downloadBookState is AlreadyDownloaded) {
-                  return BlocBuilder<BookBloc, BookState>(
-                    builder: (context, state) {
-                      bool isLiked = downloadBookState.bookStore.isFavorite;
-                      if (state is BookLikeSuccess) {
-                        isLiked = true;
-                      }
-                      if (state is BookDislikeSuccess) {
-                        isLiked = false;
-                      }
-                      return IconButton(
-                        icon: AnimatedScale(
-                          scale: isLiked ? 1.2 : 1.0,
-                          curve: Curves.easeOut,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_outline,
-                            color: isLiked
-                                ? Colors.red
-                                : Theme.of(context).brightness ==
-                                      Brightness.light
-                                ? Colors.black
-                                : Colors.white,
-                          ),
-                        ),
-                        onPressed: () {
-                          _bookBloc.add(
-                            isLiked
-                                ? BookEvent.dislikeBook(
-                                    downloadBookState.bookStore.id,
-                                  )
-                                : BookEvent.likeBook(
-                                    downloadBookState.bookStore.id,
-                                  ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                }
-                return SizedBox();
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            BlocBuilder<BookDetailsCubit, BookDetailsState>(
-              builder: (context, bookDetailsState) {
-                if (bookDetailsState is BookDetailsInitial) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (bookDetailsState is BookFoundError) {
-                  return Center(
-                    child: Text("The book cannot be found for some reason"),
-                  );
-                } else if (bookDetailsState is BookFoundOnline) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    child: _buildBookDetailsPage(
-                      author: bookDetailsState.bookDetails.bookAuthor,
-                      description: bookDetailsState.bookDetails.description,
-                      title: bookDetailsState.bookDetails.bookName,
-                      datePublished: bookDetailsState.bookDetails.datePublished,
-                      imagePath: null,
-                      imageUrl: bookDetailsState.bookDetails.imageLink,
-                      language: bookDetailsState.bookDetails.language,
-                      onlineFileName: bookDetailsState.bookDetails.fileName,
-                    ),
-                  );
-                } else if (bookDetailsState is BookFoundLocally) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    child: _buildBookDetailsPage(
-                      author: bookDetailsState.bookStore.author,
-                      description: bookDetailsState.bookStore.description ?? '',
-                      title: bookDetailsState.bookStore.name,
-                      datePublished: null,
-                      bookStore: bookDetailsState.bookStore,
-                      imagePath: bookDetailsState.bookStore.imagePath,
-                      imageUrl: bookDetailsState.bookStore.imageUrl,
-                      language: null,
-                      onlineFileName: null,
-                    ),
-                  );
-                } else {
-                  return Center(
-                    child: Text("Error while fetching for book item."),
-                  );
-                }
-              },
-            ),
-            SizedBox(height: 100),
-          ],
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: BlocBuilder<DownloadBooksBloc, DownloadBookState>(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pop(context, isDownloaded);
+      },
+      child: Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        appBar: AppBar(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Book Info"),
+              BlocBuilder<DownloadBooksBloc, DownloadBookState>(
                 builder: (context, downloadBookState) {
                   if (downloadBookState is AlreadyDownloaded) {
-                    return _buildOpenBookButton(
-                      onPressed: () {
-                        widget._router.onShowBookViewerUi(
-                          context,
-                          downloadBookState.bookStore,
+                    return BlocBuilder<BookBloc, BookState>(
+                      builder: (context, state) {
+                        bool isLiked = downloadBookState.bookStore.isFavorite;
+                        if (state is BookLikeSuccess) {
+                          isLiked = true;
+                        }
+                        if (state is BookDislikeSuccess) {
+                          isLiked = false;
+                        }
+                        return IconButton(
+                          icon: AnimatedScale(
+                            scale: isLiked ? 1.2 : 1.0,
+                            curve: Curves.easeOut,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_outline,
+                              color: isLiked
+                                  ? Colors.red
+                                  : Theme.of(context).brightness ==
+                                        Brightness.light
+                                  ? Colors.black
+                                  : Colors.white,
+                            ),
+                          ),
+                          onPressed: () {
+                            _bookBloc.add(
+                              isLiked
+                                  ? BookEvent.dislikeBook(
+                                      downloadBookState.bookStore.id,
+                                    )
+                                  : BookEvent.likeBook(
+                                      downloadBookState.bookStore.id,
+                                    ),
+                            );
+                          },
                         );
                       },
                     );
                   }
-                  return const SizedBox.shrink();
+                  return SizedBox();
                 },
               ),
-            ),
-            const SizedBox(width: 12),
-            BlocBuilder<BookDetailsCubit, BookDetailsState>(
-              builder: (context, bookDetailsState) {
-                if (bookDetailsState is BookFoundOnline) {
-                  return _buildDownloadButton(bookDetailsState);
-                } else if (bookDetailsState is BookFoundLocally) {
-                  return _buildDownloadButton(bookDetailsState);
-                }
-                return SizedBox();
-              },
-            ),
-          ],
+            ],
+          ),
+        ),
+        body: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              BlocBuilder<BookDetailsCubit, BookDetailsState>(
+                builder: (context, bookDetailsState) {
+                  if (bookDetailsState is BookDetailsInitial) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (bookDetailsState is BookFoundError) {
+                    return Center(
+                      child: Text("The book cannot be found for some reason"),
+                    );
+                  } else if (bookDetailsState is BookFoundOnline) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
+                      ),
+                      child: _buildBookDetailsPage(
+                        author: bookDetailsState.bookDetails.bookAuthor,
+                        description: bookDetailsState.bookDetails.description,
+                        title: bookDetailsState.bookDetails.bookName,
+                        datePublished:
+                            bookDetailsState.bookDetails.datePublished,
+                        imagePath: null,
+                        imageUrl: bookDetailsState.bookDetails.imageLink,
+                        language: bookDetailsState.bookDetails.language,
+                        onlineFileName: bookDetailsState.bookDetails.fileName,
+                      ),
+                    );
+                  } else if (bookDetailsState is BookFoundLocally) {
+                    isDownloaded = true;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
+                      ),
+                      child: _buildBookDetailsPage(
+                        author: bookDetailsState.bookStore.author,
+                        description:
+                            bookDetailsState.bookStore.description ?? '',
+                        title: bookDetailsState.bookStore.name,
+                        datePublished: null,
+                        bookStore: bookDetailsState.bookStore,
+                        imagePath: bookDetailsState.bookStore.imagePath,
+                        imageUrl: bookDetailsState.bookStore.imageUrl,
+                        language: null,
+                        onlineFileName: null,
+                      ),
+                    );
+                  } else {
+                    return Center(
+                      child: Text("Error while fetching for book item."),
+                    );
+                  }
+                },
+              ),
+              SizedBox(height: 100),
+            ],
+          ),
+        ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: BlocBuilder<DownloadBooksBloc, DownloadBookState>(
+                  builder: (context, downloadBookState) {
+                    if (downloadBookState is AlreadyDownloaded) {
+                      return _buildOpenBookButton(
+                        onPressed: () {
+                          widget._router.onShowBookViewerUi(
+                            context,
+                            downloadBookState.bookStore,
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              BlocBuilder<BookDetailsCubit, BookDetailsState>(
+                builder: (context, bookDetailsState) {
+                  if (bookDetailsState is BookFoundOnline) {
+                    return _buildDownloadButton(bookDetailsState);
+                  } else if (bookDetailsState is BookFoundLocally) {
+                    isDownloaded = true;
+                    return _buildDownloadButton(bookDetailsState);
+                  }
+                  return SizedBox();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
