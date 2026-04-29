@@ -9,6 +9,10 @@ class BookSearchCubit extends Cubit<List<BookSearchResult>> {
   BookSearchCubit(this._homeViewModel) : super([]);
 
   Future<void> results(String search) async {
+    if (search.isEmpty) {
+      emit([]);
+      return;
+    }
     final currentRequestId = ++_activeRequestId;
     final books = await _homeViewModel.searchBooksOnline(search);
 

@@ -402,6 +402,8 @@ class _HomePageState extends State<HomePage>
     bool isLiked = bookStore.isFavorite;
     return InkWell(
       onTap: () {
+        searchController.clear();
+        _searchCubit.results("");
         widget._router.onShowBookDetailsUi(
           context,
           bookStore: bookStore,
