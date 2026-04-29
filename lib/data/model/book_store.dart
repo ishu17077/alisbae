@@ -40,6 +40,9 @@ class BookStore {
     if (imageUrl == null || imageUrl!.isEmpty) {
       imageUrl = null;
     }
+    if (currentRead < 1) {
+      throw Exception("Unable to resolve page 0");
+    }
     this.addedOn = addedOn ?? DateTime.now();
 
     if (rating == null || rating == 0 || rating! < 0 || rating! > 5) {

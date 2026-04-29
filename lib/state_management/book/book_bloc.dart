@@ -12,11 +12,11 @@ class BookBloc extends Bloc<BookEvent, BookState> {
   BookBloc(this.bookViewModel, this.bookDownloadsCubit) : super(BookInitial()) {
     on<LikeBook>((event, emit) async {
       try {
-        await bookViewModel.updateLikeStatus(
-          isLiked: true,
-        );
+        await bookViewModel.updateLikeStatus(isLiked: true);
 
-        await bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks(
+          folderId: bookViewModel.bookStore?.folderId,
+        );
         emit(BookLikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -27,7 +27,9 @@ class BookBloc extends Bloc<BookEvent, BookState> {
       try {
         await bookViewModel.updateLikeStatus(isLiked: false);
 
-        await bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks(
+          folderId: bookViewModel.bookStore?.folderId,
+        );
         emit(BookDislikeSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -40,7 +42,9 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           currentRead: event.currentRead,
           lastRead: DateTime.now(),
         );
-        await bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks(
+          folderId: bookViewModel.bookStore?.folderId,
+        );
         emit(BookLastReadUpdateSuccess());
       } catch (e) {
         emit(BookUpdateFailed());
@@ -52,7 +56,9 @@ class BookBloc extends Bloc<BookEvent, BookState> {
           rating: event.rating,
           review: event.review,
         );
-        await bookDownloadsCubit.getBooks();
+        await bookDownloadsCubit.getBooks(
+          folderId: bookViewModel.bookStore?.folderId,
+        );
         emit(BookRatingandReviewUpdateSuccess());
       } catch (e) {
         emit(BookUpdateFailed());

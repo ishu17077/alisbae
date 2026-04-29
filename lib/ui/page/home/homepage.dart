@@ -28,7 +28,6 @@ class _HomePageState extends State<HomePage>
   final TextEditingController searchController = TextEditingController();
   late final BookSearchCubit _searchCubit;
   late final BookDownloadsCubit _bookDownloadsCubit;
-  FolderStore? currentFolder;
   late final FolderCubit _folderCubit;
   late final FolderManagementBloc _folderManagementBloc;
   final Set<String> _warmedImageUrls = <String>{};
@@ -65,7 +64,41 @@ class _HomePageState extends State<HomePage>
         _handleBackNavigation();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Search books :)")),
+        appBar: AppBar(
+          title: Text("Search books :)"),
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                widget._router.onShowImportBookUi(context);
+              },
+
+              style: ButtonStyle(
+                elevation: WidgetStatePropertyAll(3.0),
+                padding: WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                ),
+                side: WidgetStatePropertyAll(
+                  BorderSide(
+                    color: Colors.blue,
+                    style: BorderStyle.solid,
+                    width: 3.2,
+                  ),
+                ),
+              ),
+
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Import Book", style: TextStyle(color: Colors.blue)),
+                  SizedBox(width: 5),
+                  Icon(Icons.add_circle_outline, color: Colors.blue),
+                ],
+              ),
+            ),
+            SizedBox(width: 10),
+          ],
+        ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: CustomScrollView(
@@ -75,7 +108,7 @@ class _HomePageState extends State<HomePage>
               _buildSliverSearchResults(),
               SliverToBoxAdapter(child: SizedBox(height: 20)),
               SliverAppBar(
-                leading: currentFolder != null
+                leading: _folderCubit.homeViewModel.currentFolder != null
                     ? BackButton(
                         onPressed: () async {
                           await _handleBackNavigation();
@@ -83,25 +116,28 @@ class _HomePageState extends State<HomePage>
                       )
                     : SizedBox(),
 
-                title: currentFolder?.name != null
+                title: _folderCubit.homeViewModel.currentFolder?.name != null
                     ? Text(
-                        currentFolder!.name,
+                        _folderCubit.homeViewModel.currentFolder!.name,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: currentFolder?.color),
+                        style: TextStyle(
+                          color:
+                              _folderCubit.homeViewModel.currentFolder?.color,
+                        ),
                       )
                     : SizedBox(),
                 actions: [
-                  currentFolder != null
+                  _folderCubit.homeViewModel.currentFolder != null
                       ? IconButton(
                           onPressed: () {
                             buildDeleteFolderAlertBox(
                               context,
-                              currentFolder!,
+                              _folderCubit.homeViewModel.currentFolder!,
                             ).then((shouldDelete) {
                               if (shouldDelete) {
                                 _folderManagementBloc.add(
                                   FolderManagementEvent.deleteFolder(
-                                    currentFolder!,
+                                    _folderCubit.homeViewModel.currentFolder!,
                                   ),
                                 );
                                 _handleBackNavigation();
@@ -224,47 +260,48 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _handleBackNavigation() async {
-    if (currentFolder == null) {
+    if (_folderCubit.homeViewModel.currentFolder == null) {
       SystemNavigator.pop();
     }
-    _bookDownloadsCubit.getBooks(folderId: currentFolder?.parentFolderId);
-    _folderCubit.getFolders(parentFolderId: currentFolder?.parentFolderId);
-    if (currentFolder?.parentFolderId != null) {
-      currentFolder = await _folderCubit.homeViewModel.getFolder(
-        currentFolder!.parentFolderId!,
-      );
-      setState(() {});
-    } else {
-      setState(() {
-        currentFolder = null;
-      });
-    }
+    await _bookDownloadsCubit.getBooks(
+      folderId: _folderCubit.homeViewModel.currentFolder?.parentFolderId,
+    );
+    await _folderCubit.getFolders(
+      parentFolderId: _folderCubit.homeViewModel.currentFolder?.parentFolderId,
+    );
+    setState(() {
+      _folderCubit.homeViewModel.currentFolder;
+    });
   }
 
-  TextField _buildTextField() {
-    return TextField(
-      controller: searchController,
-      autofocus: false,
-      decoration: InputDecoration(
-        label: Text("What thy must demand?"),
-        hint: Text("Procced!"),
-      ),
-      onChanged: (val) async {
-        val = val.trim();
-        if (val == "") {
-          setState(() {});
-          return;
-        }
+  Widget _buildTextField() {
+    return Padding(
+      padding: EdgeInsetsGeometry.only(top: 5),
+      child: TextField(
+        controller: searchController,
+        autofocus: false,
+        decoration: InputDecoration(
+          label: Text("What thy must demand?"),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          hint: Text("Procced!"),
+        ),
+        onChanged: (val) async {
+          val = val.trim();
+          if (val == "") {
+            setState(() {});
+            return;
+          }
 
-        setState(() {
-          isLoading = true;
-        });
-        _searchCubit.results(val).then((_) {
           setState(() {
-            isLoading = false;
+            isLoading = true;
           });
-        });
-      },
+          _searchCubit.results(val).then((_) {
+            setState(() {
+              isLoading = false;
+            });
+          });
+        },
+      ),
     );
   }
 
@@ -273,7 +310,7 @@ class _HomePageState extends State<HomePage>
   ) async {
     final folderStore = FolderStore(
       name: '',
-      parentFolderId: currentFolder?.id,
+      parentFolderId: _folderCubit.homeViewModel.currentFolder?.id,
     );
 
     await showDialog(
@@ -390,11 +427,11 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  void _handleForwardNavigation(FolderStore folder) {
-    _folderCubit.getFolders(parentFolderId: folder.id);
-    _bookDownloadsCubit.getBooks(folderId: folder.id);
+  void _handleForwardNavigation(FolderStore folder) async {
+    await _folderCubit.getFolders(parentFolderId: folder.id);
+    await _bookDownloadsCubit.getBooks(folderId: folder.id);
     setState(() {
-      currentFolder = folder;
+      _folderCubit.homeViewModel.currentFolder;
     });
   }
 
@@ -402,6 +439,8 @@ class _HomePageState extends State<HomePage>
     bool isLiked = bookStore.isFavorite;
     return InkWell(
       onTap: () {
+        searchController.clear();
+        _searchCubit.results("");
         widget._router.onShowBookDetailsUi(
           context,
           bookStore: bookStore,
@@ -605,13 +644,17 @@ class _HomePageState extends State<HomePage>
               var searchResult = searchResults[index];
               return ListTile(
                 onTap: () async {
-                  widget._router.onShowBookDetailsUi(
+                  final result = await widget._router.onShowBookDetailsUi(
                     context,
                     bookStore: null,
                     isDownloaded: false,
                     searchResult: searchResult,
-                    currentFolder: currentFolder,
+                    currentFolder: _folderCubit.homeViewModel.currentFolder,
                   );
+                  if (result ?? false) {
+                    searchController.clear();
+                    _searchCubit.results(searchController.text);
+                  }
                 },
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(6),

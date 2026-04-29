@@ -54,6 +54,9 @@ dependencies:
   local_auth: ^3.0.1
   async: ^2.13.1
   path: ^1.9.1
+  file_picker: ^11.0.2
+  sqflite_common_ffi: ^2.4.0+3
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

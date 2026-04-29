@@ -8,7 +8,9 @@ import 'package:alisbae/model/book_details.dart';
 import 'package:alisbae/model/search_result.dart';
 import 'package:alisbae/service/image_saver/image_saver.dart';
 import 'package:alisbae/service/ocean_of_pdfs/data_crawler.dart';
+import 'package:alisbae/service/pdf_file/pdf_file.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path/path.dart';
 
 part '../book/book_view_model.dart';
 
@@ -17,13 +19,16 @@ class HomeViewModel {
   final IFolderDatasource _folderDatasource;
   final DataCrawler _dataCrawler;
   final ImageSaver _imageSaver;
+  final PdfFile _pdfFile;
   List<BookStore> books = [];
+  FolderStore? currentFolder;
 
   HomeViewModel(
     this._bookDataSource,
     this._folderDatasource,
     this._dataCrawler,
     this._imageSaver,
+    this._pdfFile,
   );
 
   Future<List<BookSearchResult>> searchBooksOnline(String searchParam) async {
@@ -65,7 +70,11 @@ class HomeViewModel {
   }
 
   Future<List<BookStore>> listFolderBooks({int? folderId}) async {
-    return await _bookDataSource.getFolderBooks(folderId);
+    currentFolder = folderId != null
+        ? await _folderDatasource.getFolder(folderId)
+        : null;
+    books = await _bookDataSource.getFolderBooks(folderId);
+    return books;
   }
 
   Future<List<FolderStore>> listFolders({int? parentFolderId}) async {
@@ -100,17 +109,25 @@ class HomeViewModel {
     return FolderStore.fromJSON({...folderStore.toJSON(), "id": id});
   }
 
-  Future<FolderStore?> getFolder(int id) async {
-    return _folderDatasource.getFolder(id);
-  }
+  // Future<FolderStore?> getFolder(int id) async {
+  //   if (id == currentFolder?.id) {
+  //     return currentFolder;
+  //   }
+  //   currentFolder = await _folderDatasource.getFolder(id);
+  //   return currentFolder;
+  // }
 
-  Future<void> deleteFolder(int id) async {
-    final books = await _bookDataSource.getAllFolderBooksRecursively(id);
-
-    await _folderDatasource.deleteFolder(id);
+  Future<void> deleteFolder(FolderStore folderStore) async {
+    final books = await _bookDataSource.getAllFolderBooksRecursively(
+      folderStore.id,
+    );
+    await _folderDatasource.deleteFolder(folderStore.id);
     books.map((book) {
       _dataCrawler.deleteDownload(book.bookPath);
     });
+    currentFolder = folderStore.parentFolderId != null
+        ? await _folderDatasource.getFolder(folderStore.parentFolderId!)
+        : null;
   }
 
   static List<BookStore> _filterUnsavedBooks(List<BookStore> books) {
@@ -134,10 +151,53 @@ class HomeViewModel {
   Future<void> updateLikeStatus({
     required int id,
     required bool isLiked,
+    BookStore? bookStore,
   }) async {
+    if (bookStore != null) {
+      await _bookDataSource.updateFavoriteStatus(
+        id: bookStore.id,
+        isFavorite: isLiked,
+      );
+      return;
+    }
     final book = books.firstWhere((book) => book.id == id);
     book.isFavorite = isLiked;
 
     await _bookDataSource.updateFavoriteStatus(id: id, isFavorite: isLiked);
+  }
+
+  Future<Pdf?> selectBook() async {
+    final pdf = await _pdfFile.importBook();
+    return pdf;
+  }
+
+  Future<BookStore> importBook({
+    required String bookName,
+    required String author,
+    required Pdf pdf,
+  }) async {
+    File saveFile = await _dataCrawler.saveBook(
+      file: pdf.file,
+      bookName: bookName,
+    );
+    BookStore bookStore = BookStore(
+      name: bookName,
+      author: author,
+      bookPath: saveFile.path,
+      imageUrl: null,
+      addedOn: DateTime.now(),
+      folderId: currentFolder?.id,
+    );
+    int bookStoreId = await _bookDataSource.addBook(bookStore);
+    return BookStore.fromJSON({...bookStore.toJSON(), "id": bookStoreId});
+  }
+
+  Future<void> exportBook({required BookStore bookStore}) async {
+    File file = File(bookStore.bookPath);
+    if (await file.exists()) {
+      await _pdfFile.exportBook(Pdf(basename(bookStore.bookPath), file));
+    } else {
+      throw Exception("File not found");
+    }
   }
 }
